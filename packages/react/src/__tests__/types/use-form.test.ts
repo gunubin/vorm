@@ -1,7 +1,7 @@
 import { expectTypeOf } from 'vitest';
 import { vo, createField, createFormSchema, validateAndCreate } from '@vorm/core';
-import type { Brand, Infer, FieldSchema, FormInputValues, FormOutputValues, VOLike } from '@vorm/core';
-import type { FormState } from '../../use-form.js';
+import type { Brand, Infer, FieldSchema, FieldError, FormInputValues, FormOutputValues, VOLike } from '@vorm/core';
+import type { FormState, AsyncFieldValidator, AsyncValidators } from '../../use-form.js';
 
 type Email = Brand<string, 'Email'>;
 type Password = Brand<string, 'Password'>;
@@ -212,6 +212,50 @@ describe('useForm type tests', () => {
       type Output = FormOutputValues<typeof loginSchema.fields>;
       expectTypeOf<Output['email']>().toEqualTypeOf<EmailType>();
       expectTypeOf<Output['password']>().toEqualTypeOf<PasswordType>();
+    });
+  });
+
+  describe('async validation の型', () => {
+    it('AsyncFieldValidator の validate は Promise<FieldError | null> を返す', () => {
+      type V = AsyncFieldValidator<string>;
+      expectTypeOf<V['validate']>().toEqualTypeOf<(value: string) => Promise<FieldError | null>>();
+    });
+
+    it('AsyncFieldValidator の on は AsyncTrigger | undefined', () => {
+      type V = AsyncFieldValidator<string>;
+      expectTypeOf<V['on']>().toEqualTypeOf<'blur' | 'change' | 'submit' | undefined>();
+    });
+
+    it('AsyncValidators のキーがスキーマフィールド名に制約される', () => {
+      type Fields = typeof loginSchema.fields;
+      type Validators = AsyncValidators<Fields>;
+      expectTypeOf<keyof Validators>().toEqualTypeOf<'email' | 'password'>();
+    });
+
+    it('AsyncValidators の validate は TInput 型を受け取る', () => {
+      type Fields = typeof loginSchema.fields;
+      type Validators = AsyncValidators<Fields>;
+      type EmailValidator = NonNullable<Validators['email']>;
+      expectTypeOf<Parameters<EmailValidator['validate']>[0]>().toEqualTypeOf<string>();
+    });
+
+    it('isValidating は boolean', () => {
+      type Fields = typeof loginSchema.fields;
+      type Form = FormState<Fields>;
+      expectTypeOf<Form['isValidating']>().toEqualTypeOf<boolean>();
+    });
+
+    it('validateAsync は Promise<boolean> を返す', () => {
+      type Fields = typeof loginSchema.fields;
+      type Form = FormState<Fields>;
+      expectTypeOf<ReturnType<Form['validateAsync']>>().toEqualTypeOf<Promise<boolean>>();
+    });
+
+    it('validateAsync の引数はフィールド名に制約される（省略可）', () => {
+      type Fields = typeof loginSchema.fields;
+      type Form = FormState<Fields>;
+      type ValidateAsyncName = Parameters<Form['validateAsync']>[0];
+      expectTypeOf<ValidateAsyncName>().toEqualTypeOf<'email' | 'password' | undefined>();
     });
   });
 });

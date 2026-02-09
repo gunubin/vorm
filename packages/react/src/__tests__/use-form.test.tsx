@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { vo, createField, createFormSchema } from '@vorm/core';
 import { useForm } from '../use-form.js';
@@ -244,6 +244,77 @@ describe('useForm', () => {
         result.current.setFieldTouched('email');
       });
 
+      expect(result.current.errors).toEqual({});
+    });
+
+    it('mode: onTouched validates on first blur', () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+          mode: 'onTouched',
+        }),
+      );
+
+      // Before blur: no errors
+      act(() => {
+        result.current.setFieldValue('email', 'invalid');
+      });
+      expect(result.current.errors).toEqual({});
+
+      // On blur: validates
+      act(() => {
+        result.current.setFieldTouched('email');
+      });
+      expect(result.current.errors.email).toEqual({
+        code: 'INVALID_FORMAT',
+        message: 'Invalid email format',
+      });
+    });
+
+    it('mode: onTouched revalidates on change after touched', () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+          mode: 'onTouched',
+        }),
+      );
+
+      // Touch the field first
+      act(() => {
+        result.current.setFieldTouched('email');
+      });
+      expect(result.current.errors.email).toBeDefined();
+
+      // Now change: should revalidate
+      act(() => {
+        result.current.setFieldValue('email', 'test@example.com');
+      });
+      expect(result.current.errors.email).toBeUndefined();
+
+      // Invalid change: should show error again
+      act(() => {
+        result.current.setFieldValue('email', 'invalid');
+      });
+      expect(result.current.errors.email).toBeDefined();
+    });
+
+    it('mode: onTouched does not revalidate untouched fields on change', () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+          mode: 'onTouched',
+        }),
+      );
+
+      // Change without touching: no validation
+      act(() => {
+        result.current.setFieldValue('email', 'invalid');
+      });
+      expect(result.current.errors).toEqual({});
+
+      act(() => {
+        result.current.setFieldValue('email', '');
+      });
       expect(result.current.errors).toEqual({});
     });
   });
@@ -532,6 +603,502 @@ describe('useForm', () => {
       expect(result.current.field('email').isDirty).toBe(false);
       expect(result.current.field('email').isTouched).toBe(false);
       expect(result.current.field('email').error).toBeNull();
+    });
+  });
+
+  describe('async validation', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('initializes isValidating as false', () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+        }),
+      );
+
+      expect(result.current.isValidating).toBe(false);
+    });
+
+    it('skips async when sync validation fails', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue(null);
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+          mode: 'onBlur',
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'blur' },
+          },
+        }),
+      );
+
+      await act(async () => {
+        result.current.setFieldTouched('email');
+      });
+
+      expect(asyncValidate).not.toHaveBeenCalled();
+      expect(result.current.errors.email).toBeDefined();
+    });
+
+    it('runs async on blur when on=blur (default)', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue({
+        code: 'TAKEN',
+        message: 'Email already taken',
+      });
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          mode: 'onBlur',
+          asyncValidators: {
+            email: { validate: asyncValidate },
+          },
+        }),
+      );
+
+      await act(async () => {
+        result.current.setFieldTouched('email');
+      });
+
+      expect(asyncValidate).toHaveBeenCalledWith('test@example.com');
+      expect(result.current.errors.email).toEqual({
+        code: 'TAKEN',
+        message: 'Email already taken',
+      });
+    });
+
+    it('clears async error when validation succeeds', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue(null);
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          mode: 'onBlur',
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'blur' },
+          },
+        }),
+      );
+
+      // First set a manual error
+      act(() => {
+        result.current.setFieldError('email', { code: 'TAKEN', message: 'taken' });
+      });
+      expect(result.current.errors.email).toBeDefined();
+
+      // Then blur triggers async that returns null
+      await act(async () => {
+        result.current.setFieldTouched('email');
+      });
+
+      expect(result.current.errors.email).toBeUndefined();
+    });
+
+    it('on: change triggers async on value change', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue(null);
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+          mode: 'onChange',
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'change' },
+          },
+        }),
+      );
+
+      await act(async () => {
+        result.current.setFieldValue('email', 'test@example.com');
+      });
+
+      expect(asyncValidate).toHaveBeenCalledWith('test@example.com');
+    });
+
+    it('on: blur does not trigger on change', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue(null);
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+          mode: 'onChange',
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'blur' },
+          },
+        }),
+      );
+
+      await act(async () => {
+        result.current.setFieldValue('email', 'test@example.com');
+      });
+
+      expect(asyncValidate).not.toHaveBeenCalled();
+    });
+
+    it('debounce delays async on change', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue(null);
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+          mode: 'onChange',
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'change', debounceMs: 300 },
+          },
+        }),
+      );
+
+      act(() => {
+        result.current.setFieldValue('email', 'test@example.com');
+      });
+
+      // Not called yet (debounced)
+      expect(asyncValidate).not.toHaveBeenCalled();
+
+      // Advance past debounce
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(asyncValidate).toHaveBeenCalledWith('test@example.com');
+    });
+
+    it('rapid input cancels previous async (debounce)', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue(null);
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+          mode: 'onChange',
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'change', debounceMs: 300 },
+          },
+        }),
+      );
+
+      act(() => {
+        result.current.setFieldValue('email', 'a@b.com');
+      });
+
+      vi.advanceTimersByTime(100);
+
+      act(() => {
+        result.current.setFieldValue('email', 'test@example.com');
+      });
+
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+      });
+
+      // Only called once with the latest value
+      expect(asyncValidate).toHaveBeenCalledTimes(1);
+      expect(asyncValidate).toHaveBeenCalledWith('test@example.com');
+    });
+
+    it('isValidating is true during async, false after', async () => {
+      let resolveAsync: (v: null) => void;
+      const asyncPromise = new Promise<null>((resolve) => {
+        resolveAsync = resolve;
+      });
+      const asyncValidate = vi.fn().mockReturnValue(asyncPromise);
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          mode: 'onBlur',
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'blur' },
+          },
+        }),
+      );
+
+      act(() => {
+        result.current.setFieldTouched('email');
+        // The async is now pending
+      });
+
+      expect(result.current.isValidating).toBe(true);
+
+      await act(async () => {
+        resolveAsync!(null);
+      });
+
+      expect(result.current.isValidating).toBe(false);
+    });
+
+    it('handleSubmit runs async validators before calling handler', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue({
+        code: 'TAKEN',
+        message: 'Email already taken',
+      });
+      const handler = vi.fn();
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'submit' },
+          },
+        }),
+      );
+
+      await act(async () => {
+        await result.current.handleSubmit(handler)();
+      });
+
+      expect(asyncValidate).toHaveBeenCalledWith('test@example.com');
+      expect(handler).not.toHaveBeenCalled();
+      expect(result.current.errors.email).toEqual({
+        code: 'TAKEN',
+        message: 'Email already taken',
+      });
+    });
+
+    it('handleSubmit calls handler when async passes', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue(null);
+      const handler = vi.fn();
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'blur' },
+          },
+        }),
+      );
+
+      await act(async () => {
+        await result.current.handleSubmit(handler)();
+      });
+
+      expect(asyncValidate).toHaveBeenCalled();
+      expect(handler).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'Password1',
+      });
+    });
+
+    it('handleSubmit skips async when sync fails', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue(null);
+      const handler = vi.fn();
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'blur' },
+          },
+        }),
+      );
+
+      await act(async () => {
+        await result.current.handleSubmit(handler)();
+      });
+
+      expect(asyncValidate).not.toHaveBeenCalled();
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('validateAsync single field returns true on success', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue(null);
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          asyncValidators: {
+            email: { validate: asyncValidate },
+          },
+        }),
+      );
+
+      let isValid: boolean;
+      await act(async () => {
+        isValid = await result.current.validateAsync('email');
+      });
+
+      expect(isValid!).toBe(true);
+      expect(asyncValidate).toHaveBeenCalledWith('test@example.com');
+    });
+
+    it('validateAsync single field returns false on async error', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue({
+        code: 'TAKEN',
+        message: 'Already taken',
+      });
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          asyncValidators: {
+            email: { validate: asyncValidate },
+          },
+        }),
+      );
+
+      let isValid: boolean;
+      await act(async () => {
+        isValid = await result.current.validateAsync('email');
+      });
+
+      expect(isValid!).toBe(false);
+      expect(result.current.errors.email).toEqual({
+        code: 'TAKEN',
+        message: 'Already taken',
+      });
+    });
+
+    it('validateAsync single field returns false on sync error (skips async)', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue(null);
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'invalid', password: 'Password1' },
+          asyncValidators: {
+            email: { validate: asyncValidate },
+          },
+        }),
+      );
+
+      let isValid: boolean;
+      await act(async () => {
+        isValid = await result.current.validateAsync('email');
+      });
+
+      expect(isValid!).toBe(false);
+      expect(asyncValidate).not.toHaveBeenCalled();
+    });
+
+    it('validateAsync all fields', async () => {
+      const emailAsync = vi.fn().mockResolvedValue(null);
+      const passwordAsync = vi.fn().mockResolvedValue(null);
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          asyncValidators: {
+            email: { validate: emailAsync },
+            password: { validate: passwordAsync },
+          },
+        }),
+      );
+
+      let isValid: boolean;
+      await act(async () => {
+        isValid = await result.current.validateAsync();
+      });
+
+      expect(isValid!).toBe(true);
+      expect(emailAsync).toHaveBeenCalled();
+      expect(passwordAsync).toHaveBeenCalled();
+    });
+
+    it('reset cancels pending async validations', async () => {
+      let resolveAsync: (v: null) => void;
+      const asyncPromise = new Promise<null>((resolve) => {
+        resolveAsync = resolve;
+      });
+      const asyncValidate = vi.fn().mockReturnValue(asyncPromise);
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          mode: 'onBlur',
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'blur' },
+          },
+        }),
+      );
+
+      act(() => {
+        result.current.setFieldTouched('email');
+      });
+
+      expect(result.current.isValidating).toBe(true);
+
+      act(() => {
+        result.current.reset();
+      });
+
+      expect(result.current.isValidating).toBe(false);
+      expect(result.current.errors).toEqual({});
+
+      // Resolving after reset should not set errors
+      await act(async () => {
+        resolveAsync!(null);
+      });
+
+      expect(result.current.errors).toEqual({});
+    });
+
+    it('blur triggers async even without onBlur mode', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue({
+        code: 'TAKEN',
+        message: 'taken',
+      });
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          mode: 'onSubmit',
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'blur' },
+          },
+        }),
+      );
+
+      await act(async () => {
+        result.current.setFieldTouched('email');
+      });
+
+      expect(asyncValidate).toHaveBeenCalledWith('test@example.com');
+      expect(result.current.errors.email).toEqual({
+        code: 'TAKEN',
+        message: 'taken',
+      });
+    });
+
+    it('concurrent async: later call aborts earlier one', async () => {
+      let callCount = 0;
+      const asyncValidate = vi.fn().mockImplementation(async () => {
+        callCount++;
+        const myCall = callCount;
+        await new Promise((r) => setTimeout(r, 100));
+        if (myCall === 1) {
+          return { code: 'FIRST', message: 'first' };
+        }
+        return null;
+      });
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          mode: 'onBlur',
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'blur' },
+          },
+        }),
+      );
+
+      // First blur
+      act(() => {
+        result.current.setFieldTouched('email');
+      });
+
+      // Second blur immediately (should abort first)
+      act(() => {
+        result.current.setFieldTouched('email');
+      });
+
+      await act(async () => {
+        vi.advanceTimersByTime(200);
+      });
+
+      // The second call returned null, so no error
+      expect(result.current.errors.email).toBeUndefined();
     });
   });
 });

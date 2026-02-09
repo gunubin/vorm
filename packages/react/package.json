@@ -1,12 +1,35 @@
 {
   "name": "@vorm/react",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "VO-first React form hooks with per-field subscriptions via useSyncExternalStore",
+  "keywords": ["form", "react", "hooks", "validation", "branded-types", "typescript"],
+  "license": "MIT",
+  "author": "gunubin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gunubin/vorm.git",
+    "directory": "packages/react"
+  },
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
   "scripts": {
+    "build": "tsup",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm run build"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0"

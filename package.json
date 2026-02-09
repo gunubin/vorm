@@ -2,6 +2,7 @@
   "name": "vorm",
   "private": true,
   "scripts": {
+    "build": "pnpm -r run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:typecheck": "vitest --typecheck",
@@ -16,6 +17,7 @@
     ]
   },
   "devDependencies": {
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^3.0.5"
   }

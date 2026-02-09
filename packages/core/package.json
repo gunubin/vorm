@@ -1,12 +1,35 @@
 {
   "name": "@vorm/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "VO-first form validation core — branded types, field schemas, and validation logic",
+  "keywords": ["form", "validation", "value-object", "branded-types", "typescript"],
+  "license": "MIT",
+  "author": "gunubin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gunubin/vorm.git",
+    "directory": "packages/core"
+  },
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
   "scripts": {
+    "build": "tsup",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm run build"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

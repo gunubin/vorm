@@ -215,6 +215,22 @@ describe('useForm type tests', () => {
     });
   });
 
+  describe('ValidationMode の型', () => {
+    it('mode は onChange | onBlur | onTouched | onSubmit', () => {
+      type Fields = typeof loginSchema.fields;
+      type Form = FormState<Fields>;
+      expectTypeOf<Form['mode']>().toEqualTypeOf<'onChange' | 'onBlur' | 'onTouched' | 'onSubmit'>();
+    });
+
+    it('onTouched は有効な mode 値', () => {
+      type Fields = typeof loginSchema.fields;
+      type Form = FormState<Fields>;
+      // onTouched が mode に含まれることを確認（代入可能性）
+      const _check: Form['mode'] = 'onTouched';
+      expectTypeOf(_check).toEqualTypeOf<'onTouched'>();
+    });
+  });
+
   describe('async validation の型', () => {
     it('AsyncFieldValidator の validate は Promise<FieldError | null> を返す', () => {
       type V = AsyncFieldValidator<string>;

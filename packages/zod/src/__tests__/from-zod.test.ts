@@ -80,6 +80,70 @@ describe('fromZod', () => {
     });
   });
 
+  describe('z.number() exclusive', () => {
+    it('.gt() (exclusive min) → value > min', () => {
+      const rules = fromZod(z.number().gt(0, 'MUST_BE_POSITIVE'));
+
+      expect(rules).toHaveLength(1);
+      expect(rules[0].validate(1)).toBe(true);
+      expect(rules[0].validate(0)).toBe(false);
+      expect(rules[0].validate(-1)).toBe(false);
+    });
+
+    it('.lt() (exclusive max) → value < max', () => {
+      const rules = fromZod(z.number().lt(100, 'MUST_BE_UNDER_100'));
+
+      expect(rules).toHaveLength(1);
+      expect(rules[0].validate(99)).toBe(true);
+      expect(rules[0].validate(100)).toBe(false);
+      expect(rules[0].validate(101)).toBe(false);
+    });
+  });
+
+  describe('z.string() .max()', () => {
+    it('.max() → string length check', () => {
+      const rules = fromZod(z.string().max(5, 'TOO_LONG'));
+
+      expect(rules).toHaveLength(1);
+      expect(rules[0].validate('hello')).toBe(true);
+      expect(rules[0].validate('hello!')).toBe(false);
+    });
+  });
+
+  describe('non-string/number values', () => {
+    it('min returns true for non-string/number', () => {
+      const rules = fromZod(z.string().min(1, 'MIN'));
+      expect(rules[0].validate(true as any)).toBe(true);
+    });
+
+    it('max returns true for non-string/number', () => {
+      const rules = fromZod(z.string().max(5, 'MAX'));
+      expect(rules[0].validate(true as any)).toBe(true);
+    });
+
+    it('email returns true for non-string', () => {
+      const rules = fromZod(z.string().email('EMAIL'));
+      expect(rules[0].validate(123 as any)).toBe(true);
+    });
+
+    it('regex returns true for non-string', () => {
+      const rules = fromZod(z.string().regex(/abc/, 'REGEX'));
+      expect(rules[0].validate(123 as any)).toBe(true);
+    });
+  });
+
+  describe('unknown check kind', () => {
+    it('unsupported check kind → no-op rule (always true)', () => {
+      const schema = z.string().url('INVALID_URL');
+      const rules = fromZod(schema);
+
+      expect(rules.length).toBeGreaterThan(0);
+      const urlRule = rules.find((r) => r.code === 'INVALID_URL');
+      expect(urlRule).toBeDefined();
+      expect(urlRule!.validate('anything')).toBe(true);
+    });
+  });
+
   describe('.brand()', () => {
     it('.brand() が無視される（内部のルールのみ抽出される）', () => {
       const rules = fromZod(z.string().min(8, 'TOO_SHORT').brand<'Password'>());

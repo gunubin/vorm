@@ -198,8 +198,8 @@ Create reusable, parameterized validation rules.
 ```ts
 import { createRule } from '@vorm/core';
 
-const minLength = createRule<string, number>('TOO_SHORT', (v, min) => v.length >= min);
-const maxLength = createRule<string, number>('TOO_LONG', (v, max) => v.length <= max);
+const minLength = createRule('TOO_SHORT', (v: string, min: number) => v.length >= min);
+const maxLength = createRule('TOO_LONG', (v: string, max: number) => v.length <= max);
 
 const Username = vo('Username', [
   minLength(3),
@@ -210,7 +210,7 @@ const Username = vo('Username', [
 Without parameters:
 
 ```ts
-const nonEmpty = createRule<string>('REQUIRED', (v) => v.length > 0);
+const nonEmpty = createRule('REQUIRED', (v: string) => v.length > 0);
 const Name = vo('Name', [nonEmpty()]);
 ```
 

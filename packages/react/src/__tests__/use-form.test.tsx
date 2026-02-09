@@ -882,6 +882,21 @@ describe('useForm', () => {
       });
     });
 
+    it('handleSubmit calls handler without event', async () => {
+      const handler = vi.fn();
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+        }),
+      );
+
+      await act(async () => {
+        await result.current.handleSubmit(handler)();
+      });
+
+      expect(handler).toHaveBeenCalled();
+    });
+
     it('handleSubmit skips async when sync fails', async () => {
       const asyncValidate = vi.fn().mockResolvedValue(null);
       const handler = vi.fn();
@@ -996,6 +1011,39 @@ describe('useForm', () => {
       expect(passwordAsync).toHaveBeenCalled();
     });
 
+    it('reset cancels pending debounce timers', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue({ code: 'TAKEN', message: 'taken' });
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          mode: 'onChange',
+          asyncValidators: {
+            email: { validate: asyncValidate, on: 'change', debounceMs: 500 },
+          },
+        }),
+      );
+
+      // Start a debounced validation
+      act(() => {
+        result.current.setFieldValue('email', 'new@example.com');
+      });
+
+      // Reset before debounce fires
+      act(() => {
+        result.current.reset();
+      });
+
+      // Advance past debounce
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+      });
+
+      // Async should not have been called since reset cleared timers
+      expect(asyncValidate).not.toHaveBeenCalled();
+      expect(result.current.errors).toEqual({});
+    });
+
     it('reset cancels pending async validations', async () => {
       let resolveAsync: (v: null) => void;
       const asyncPromise = new Promise<null>((resolve) => {
@@ -1059,6 +1107,135 @@ describe('useForm', () => {
         code: 'TAKEN',
         message: 'taken',
       });
+    });
+
+    it('unmount cleanup aborts pending async and clears timers', async () => {
+      let resolveAsync: (v: null) => void;
+      const asyncPromise = new Promise<null>((resolve) => {
+        resolveAsync = resolve;
+      });
+      // email: non-debounced async → creates AbortController immediately
+      const emailAsync = vi.fn().mockReturnValue(asyncPromise);
+      // password: debounced async → creates timer
+      const passwordAsync = vi.fn().mockResolvedValue(null);
+
+      const { result, unmount } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          mode: 'onChange',
+          asyncValidators: {
+            email: { validate: emailAsync, on: 'change' },
+            password: { validate: passwordAsync, on: 'change', debounceMs: 500 },
+          },
+        }),
+      );
+
+      // Trigger email async (no debounce → runs immediately, creates AbortController)
+      act(() => {
+        result.current.setFieldValue('email', 'new@example.com');
+      });
+      expect(result.current.isValidating).toBe(true);
+
+      // Trigger password async (with debounce → creates timer, does not run yet)
+      act(() => {
+        result.current.setFieldValue('password', 'NewPass123');
+      });
+
+      // Unmount while AbortController is pending and timer is pending
+      unmount();
+
+      // Resolve / advance after unmount should not cause issues
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+        resolveAsync!(null);
+      });
+
+      // passwordAsync should NOT have been called because timer was cleared on unmount
+      expect(passwordAsync).not.toHaveBeenCalled();
+    });
+
+    it('validate returns true for non-existent field', () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+        }),
+      );
+
+      let isValid: boolean;
+      act(() => {
+        isValid = result.current.validate('nonExistent' as any);
+      });
+      expect(isValid!).toBe(true);
+    });
+
+    it('validateAsync returns true for non-existent field', async () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+        }),
+      );
+
+      let isValid: boolean;
+      await act(async () => {
+        isValid = await result.current.validateAsync('nonExistent' as any);
+      });
+      expect(isValid!).toBe(true);
+    });
+
+    it('validateAsync all returns false on sync error (skips async)', async () => {
+      const asyncValidate = vi.fn().mockResolvedValue(null);
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+          asyncValidators: {
+            email: { validate: asyncValidate },
+          },
+        }),
+      );
+
+      let isValid: boolean;
+      await act(async () => {
+        isValid = await result.current.validateAsync();
+      });
+
+      expect(isValid!).toBe(false);
+      expect(asyncValidate).not.toHaveBeenCalled();
+    });
+
+    it('validateAsync all returns true when no async validators', async () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+        }),
+      );
+
+      let isValid: boolean;
+      await act(async () => {
+        isValid = await result.current.validateAsync();
+      });
+
+      expect(isValid!).toBe(true);
+    });
+
+    it('validateAsync all returns false when async fails', async () => {
+      const emailAsync = vi.fn().mockResolvedValue({ code: 'TAKEN', message: 'taken' });
+
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+          asyncValidators: {
+            email: { validate: emailAsync },
+          },
+        }),
+      );
+
+      let isValid: boolean;
+      await act(async () => {
+        isValid = await result.current.validateAsync();
+      });
+
+      expect(isValid!).toBe(false);
     });
 
     it('concurrent async: later call aborts earlier one', async () => {

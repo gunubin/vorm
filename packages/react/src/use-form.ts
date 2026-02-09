@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useSyncExternalStore } from 'react';
 import type {
   FormSchema,
   FieldSchema,
@@ -9,6 +9,8 @@ import type {
 } from '@vorm/core';
 import type { FieldState } from './use-field.js';
 import { validateField, validateForm } from '@vorm/core';
+import { createFormStore } from './form-store.js';
+import type { FormStore } from './form-store.js';
 
 type ValidationMode = 'onChange' | 'onBlur' | 'onTouched' | 'onSubmit';
 
@@ -54,6 +56,8 @@ export type FormState<TFields extends Record<string, FieldSchema<any, any, boole
   schema: FormSchema<TFields>;
   mode: ValidationMode;
   defaultValues: FormInputValues<TFields>;
+  /** @internal */
+  __store: FormStore<TFields>;
 };
 
 export function useForm<TFields extends Record<string, FieldSchema<any, any, boolean>>>(
@@ -61,12 +65,22 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
   options: UseFormOptions<TFields>,
 ): FormState<TFields> {
   const { defaultValues, mode = 'onSubmit', asyncValidators } = options;
-  const [values, setValues] = useState<FormInputValues<TFields>>({ ...defaultValues });
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [isDirty, setIsDirty] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isValidating, setIsValidating] = useState(false);
-  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
+
+  const storeRef = useRef<FormStore<TFields>>(null!);
+  if (storeRef.current === null) {
+    storeRef.current = createFormStore<TFields>({
+      values: { ...defaultValues },
+      errors: {},
+      isDirty: false,
+      isSubmitting: false,
+      isValidating: false,
+      touchedFields: {},
+    });
+  }
+  const store = storeRef.current;
+
+  const state = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
+
   const defaultValuesRef = useRef(defaultValues);
   const asyncValidatorsRef = useRef(asyncValidators);
   asyncValidatorsRef.current = asyncValidators;
@@ -74,14 +88,13 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
   const abortControllersRef = useRef(new Map<string, AbortController>());
   const debounceTimersRef = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
-  const isValid = Object.keys(errors).length === 0;
+  const isValid = Object.keys(state.errors).length === 0;
 
   const runAsyncValidation = useCallback(
     async (name: string, value: any): Promise<FieldError | null> => {
       const asyncValidator = asyncValidatorsRef.current?.[name];
       if (!asyncValidator) return null;
 
-      // Abort previous async validation for this field
       const prevController = abortControllersRef.current.get(name);
       if (prevController) prevController.abort();
 
@@ -89,33 +102,29 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
       abortControllersRef.current.set(name, controller);
 
       validatingFieldsRef.current.add(name);
-      setIsValidating(true);
+      store.setIsValidating(true);
 
       try {
         const error = await asyncValidator.validate(value);
         if (controller.signal.aborted) return null;
 
-        setErrors((prev) => {
-          const next = { ...prev };
-          if (error) {
-            next[name] = error;
-          } else {
-            delete next[name];
-          }
-          return next;
-        });
+        if (error) {
+          store.setFieldError(name, error);
+        } else {
+          store.clearFieldError(name);
+        }
         return error;
       } finally {
         if (!controller.signal.aborted) {
           validatingFieldsRef.current.delete(name);
           abortControllersRef.current.delete(name);
           if (validatingFieldsRef.current.size === 0) {
-            setIsValidating(false);
+            store.setIsValidating(false);
           }
         }
       }
     },
-    [],
+    [store],
   );
 
   const scheduleAsyncValidation = useCallback(
@@ -126,7 +135,6 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
       const on = asyncValidator.on ?? 'blur';
       if (on !== trigger) return;
 
-      // Sync must pass first
       const fieldSchema = schema.fields[name];
       if (fieldSchema) {
         const formMessages = schema.messages?.[name];
@@ -134,7 +142,6 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
         if (syncError) return;
       }
 
-      // Clear any existing debounce timer
       const existingTimer = debounceTimersRef.current.get(name);
       if (existingTimer) clearTimeout(existingTimer);
 
@@ -158,44 +165,38 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
       if (!fieldSchema) return;
       const formMessages = schema.messages?.[name];
       const error = validateField(value, fieldSchema, formMessages);
-      setErrors((prev) => {
-        const next = { ...prev };
-        if (error) {
-          next[name] = error;
-        } else {
-          delete next[name];
-        }
-        return next;
-      });
+      if (error) {
+        store.setFieldError(name, error);
+      } else {
+        store.clearFieldError(name);
+      }
       if (!error && trigger) {
         scheduleAsyncValidation(name, value, trigger);
       }
     },
-    [schema, scheduleAsyncValidation],
+    [schema, store, scheduleAsyncValidation],
   );
 
   const setFieldValue = useCallback(
     (name: string, value: any) => {
-      setValues((prev) => ({ ...prev, [name]: value }));
-      setIsDirty(true);
+      store.setFieldValue(name, value);
       if (mode === 'onChange') {
         validateSingleField(name, value, 'change');
-      } else if (mode === 'onTouched' && touchedFields[name]) {
+      } else if (mode === 'onTouched' && store.getState().touchedFields[name]) {
         validateSingleField(name, value, 'change');
       }
     },
-    [mode, touchedFields, validateSingleField],
+    [mode, store, validateSingleField],
   );
 
   const setFieldTouched = useCallback(
     (name: string) => {
-      setTouchedFields((prev) => ({ ...prev, [name]: true }));
+      store.setFieldTouched(name);
       if (mode === 'onBlur' || mode === 'onTouched') {
-        const currentValue = (values as Record<string, unknown>)[name];
+        const currentValue = (store.getState().values as Record<string, unknown>)[name];
         validateSingleField(name, currentValue, 'blur');
       } else {
-        // Even without onBlur mode, trigger async if configured for blur
-        const currentValue = (values as Record<string, unknown>)[name];
+        const currentValue = (store.getState().values as Record<string, unknown>)[name];
         const fieldSchema = schema.fields[name];
         if (fieldSchema) {
           const formMessages = schema.messages?.[name];
@@ -206,131 +207,112 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
         }
       }
     },
-    [mode, values, schema, validateSingleField, scheduleAsyncValidation],
+    [mode, schema, store, validateSingleField, scheduleAsyncValidation],
   );
 
   const setFieldError = useCallback(
     (name: string, error: FieldError) => {
-      setErrors((prev) => ({ ...prev, [name]: error }));
+      store.setFieldError(name, error);
     },
-    [],
+    [store],
   );
 
   const clearFieldError = useCallback(
     (name?: string) => {
-      if (name) {
-        setErrors((prev) => {
-          const next = { ...prev };
-          delete next[name];
-          return next;
-        });
-      } else {
-        setErrors({});
-      }
+      store.clearFieldError(name);
     },
-    [],
+    [store],
   );
 
   const validate = useCallback(
     (name?: string): boolean => {
+      const currentValues = store.getState().values;
       if (name) {
         const fieldSchema = schema.fields[name];
         if (!fieldSchema) return true;
         const formMessages = schema.messages?.[name];
         const error = validateField(
-          (values as Record<string, unknown>)[name],
+          (currentValues as Record<string, unknown>)[name],
           fieldSchema,
           formMessages,
         );
-        setErrors((prev) => {
-          const next = { ...prev };
-          if (error) {
-            next[name] = error;
-          } else {
-            delete next[name];
-          }
-          return next;
-        });
+        if (error) {
+          store.setFieldError(name, error);
+        } else {
+          store.clearFieldError(name);
+        }
         return !error;
       }
-      const formErrors = validateForm(values, schema);
-      setErrors(formErrors);
+      const formErrors = validateForm(currentValues, schema);
+      store.setErrors(formErrors);
       return Object.keys(formErrors).length === 0;
     },
-    [values, schema],
+    [schema, store],
   );
 
   const validateAsync = useCallback(
     async (name?: string): Promise<boolean> => {
+      const currentValues = store.getState().values;
       if (name) {
-        // Sync first
         const fieldSchema = schema.fields[name];
         if (!fieldSchema) return true;
         const formMessages = schema.messages?.[name];
         const syncError = validateField(
-          (values as Record<string, unknown>)[name],
+          (currentValues as Record<string, unknown>)[name],
           fieldSchema,
           formMessages,
         );
-        setErrors((prev) => {
-          const next = { ...prev };
-          if (syncError) {
-            next[name] = syncError;
-          } else {
-            delete next[name];
-          }
-          return next;
-        });
+        if (syncError) {
+          store.setFieldError(name, syncError);
+        } else {
+          store.clearFieldError(name);
+        }
         if (syncError) return false;
 
-        // Then async
-        const asyncError = await runAsyncValidation(name, (values as Record<string, unknown>)[name]);
+        const asyncError = await runAsyncValidation(name, (currentValues as Record<string, unknown>)[name]);
         return !asyncError;
       }
 
-      // All fields: sync first
-      const formErrors = validateForm(values, schema);
-      setErrors(formErrors);
+      const formErrors = validateForm(currentValues, schema);
+      store.setErrors(formErrors);
       if (Object.keys(formErrors).length > 0) return false;
 
-      // Then async for all configured fields
       const asyncEntries = Object.entries(asyncValidatorsRef.current ?? {});
       if (asyncEntries.length === 0) return true;
 
       const asyncResults = await Promise.all(
         asyncEntries.map(async ([fieldName]) => {
-          const value = (values as Record<string, unknown>)[fieldName];
+          const value = (currentValues as Record<string, unknown>)[fieldName];
           return runAsyncValidation(fieldName, value);
         }),
       );
       return asyncResults.every((error) => error === null);
     },
-    [values, schema, runAsyncValidation],
+    [schema, store, runAsyncValidation],
   );
 
   const handleSubmit = useCallback(
     (handler: (values: FormOutputValues<TFields>) => void | Promise<void>) => {
       return async (e?: { preventDefault?: () => void }) => {
         e?.preventDefault?.();
-        const formErrors = validateForm(values, schema);
-        setErrors(formErrors);
+        const currentValues = store.getState().values;
+        const formErrors = validateForm(currentValues, schema);
+        store.setErrors(formErrors);
 
         if (Object.keys(formErrors).length > 0) {
           return;
         }
 
-        // Run async validators with trigger='submit'
         const asyncEntries = Object.entries(asyncValidatorsRef.current ?? {});
         if (asyncEntries.length > 0) {
           const asyncResults = await Promise.all(
             asyncEntries.map(async ([fieldName]) => {
-              const value = (values as Record<string, unknown>)[fieldName];
-              // Check sync passes for this field first
+              const value = (currentValues as Record<string, unknown>)[fieldName];
               const fieldSchema = schema.fields[fieldName];
               if (fieldSchema) {
                 const formMessages = schema.messages?.[fieldName];
                 const syncError = validateField(value, fieldSchema, formMessages);
-                if (syncError) return null; // sync already failed, skip async
+                if (syncError) return null;
               }
               return runAsyncValidation(fieldName, value);
             }),
@@ -339,15 +321,15 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
           if (hasAsyncErrors) return;
         }
 
-        setIsSubmitting(true);
+        store.setIsSubmitting(true);
         try {
-          await handler(values as unknown as FormOutputValues<TFields>);
+          await handler(currentValues as unknown as FormOutputValues<TFields>);
         } finally {
-          setIsSubmitting(false);
+          store.setIsSubmitting(false);
         }
       };
     },
-    [values, schema, runAsyncValidation],
+    [schema, store, runAsyncValidation],
   );
 
   const reset = useCallback(
@@ -355,12 +337,7 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
       const resetValues = newValues
         ? { ...defaultValuesRef.current, ...newValues }
         : { ...defaultValuesRef.current };
-      setValues(resetValues as FormInputValues<TFields>);
-      setErrors({});
-      setIsDirty(false);
-      setIsValidating(false);
-      setTouchedFields({});
-      // Cancel all pending async operations
+      store.reset(resetValues as FormInputValues<TFields>);
       for (const controller of abortControllersRef.current.values()) {
         controller.abort();
       }
@@ -371,10 +348,9 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
       debounceTimersRef.current.clear();
       validatingFieldsRef.current.clear();
     },
-    [],
+    [store],
   );
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       for (const controller of abortControllersRef.current.values()) {
@@ -388,10 +364,10 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
 
   const field = <TName extends string & keyof TFields>(name: TName) => {
     type TValue = TFields[TName] extends FieldSchema<infer TInput, any, any> ? TInput : never;
-    const value = (values as Record<string, unknown>)[name as string] as TValue;
-    const error = errors[name as string] ?? null;
+    const value = (state.values as Record<string, unknown>)[name as string] as TValue;
+    const error = state.errors[name as string] ?? null;
     const fieldIsDirty = value !== (defaultValuesRef.current as Record<string, unknown>)[name as string];
-    const isTouched = touchedFields[name as string] ?? false;
+    const isTouched = state.touchedFields[name as string] ?? false;
     return {
       value,
       error,
@@ -403,13 +379,13 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
   };
 
   return {
-    values,
-    errors,
+    values: state.values,
+    errors: state.errors,
     isValid,
-    isDirty,
-    isSubmitting,
-    isValidating,
-    touchedFields,
+    isDirty: state.isDirty,
+    isSubmitting: state.isSubmitting,
+    isValidating: state.isValidating,
+    touchedFields: state.touchedFields,
     handleSubmit,
     reset,
     setFieldValue,
@@ -422,5 +398,6 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
     schema,
     mode,
     defaultValues: defaultValuesRef.current,
+    __store: store,
   };
 }

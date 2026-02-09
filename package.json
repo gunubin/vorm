@@ -1,0 +1,22 @@
+{
+  "name": "vorm",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:typecheck": "vitest --typecheck",
+    "test:coverage": "vitest run --coverage"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ],
+    "ignoredBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.5"
+  }
+}

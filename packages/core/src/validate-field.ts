@@ -1,0 +1,29 @@
+import type { FieldSchema, FieldError, ErrorMessages } from './types.js';
+import { resolveMessage } from './resolve-message.js';
+
+export function validateField<TInput>(
+  value: TInput | undefined | null,
+  fieldSchema: FieldSchema<TInput, any, boolean>,
+  formMessages?: ErrorMessages,
+): FieldError | null {
+  if (fieldSchema.required) {
+    if (value === undefined || value === null || value === '') {
+      const code = 'REQUIRED';
+      const message = resolveMessage(code, formMessages, fieldSchema.messages);
+      return { code, message };
+    }
+  } else {
+    if (value === undefined || value === null || value === '') {
+      return null;
+    }
+  }
+
+  for (const rule of fieldSchema.rules) {
+    if (!rule.validate(value as TInput)) {
+      const message = resolveMessage(rule.code, formMessages, fieldSchema.messages);
+      return { code: rule.code, message };
+    }
+  }
+
+  return null;
+}

@@ -101,6 +101,36 @@ describe('useForm type tests', () => {
     });
   });
 
+  describe('setFieldError / clearFieldError / validate の型', () => {
+    it('setFieldError は field name に制約される', () => {
+      type Fields = typeof loginSchema.fields;
+      type Form = FormState<Fields>;
+      type SetFieldErrorName = Parameters<Form['setFieldError']>[0];
+      expectTypeOf<SetFieldErrorName>().toEqualTypeOf<'email' | 'password'>();
+    });
+
+    it('clearFieldError は field name に制約される（省略可）', () => {
+      type Fields = typeof loginSchema.fields;
+      type Form = FormState<Fields>;
+      type ClearFieldErrorName = Parameters<Form['clearFieldError']>[0];
+      expectTypeOf<ClearFieldErrorName>().toEqualTypeOf<'email' | 'password' | undefined>();
+    });
+
+    it('validate は field name に制約される（省略可）', () => {
+      type Fields = typeof loginSchema.fields;
+      type Form = FormState<Fields>;
+      type ValidateName = Parameters<Form['validate']>[0];
+      expectTypeOf<ValidateName>().toEqualTypeOf<'email' | 'password' | undefined>();
+    });
+
+    it('validate は boolean を返す', () => {
+      type Fields = typeof loginSchema.fields;
+      type Form = FormState<Fields>;
+      type ValidateReturn = ReturnType<Form['validate']>;
+      expectTypeOf<ValidateReturn>().toEqualTypeOf<boolean>();
+    });
+  });
+
   describe('field() の FieldState 型', () => {
     it('field("email") の TInput は string（ブランドなし）', () => {
       type Fields = typeof loginSchema.fields;

@@ -248,6 +248,177 @@ describe('useForm', () => {
     });
   });
 
+  describe('setFieldError', () => {
+    it('sets a custom error on a field', () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+        }),
+      );
+
+      act(() => {
+        result.current.setFieldError('email', { code: 'SERVER', message: 'Email already taken' });
+      });
+
+      expect(result.current.errors.email).toEqual({ code: 'SERVER', message: 'Email already taken' });
+      expect(result.current.isValid).toBe(false);
+    });
+
+    it('overwrites existing validation error', async () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+        }),
+      );
+
+      await act(async () => {
+        await result.current.handleSubmit(() => {})();
+      });
+      expect(result.current.errors.email?.code).toBe('REQUIRED');
+
+      act(() => {
+        result.current.setFieldError('email', { code: 'SERVER', message: 'Server error' });
+      });
+
+      expect(result.current.errors.email).toEqual({ code: 'SERVER', message: 'Server error' });
+    });
+  });
+
+  describe('clearFieldError', () => {
+    it('clears error on a specific field', async () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+        }),
+      );
+
+      await act(async () => {
+        await result.current.handleSubmit(() => {})();
+      });
+      expect(result.current.errors.email).toBeDefined();
+      expect(result.current.errors.password).toBeDefined();
+
+      act(() => {
+        result.current.clearFieldError('email');
+      });
+
+      expect(result.current.errors.email).toBeUndefined();
+      expect(result.current.errors.password).toBeDefined();
+    });
+
+    it('clears all errors when called without arguments', async () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+        }),
+      );
+
+      await act(async () => {
+        await result.current.handleSubmit(() => {})();
+      });
+      expect(Object.keys(result.current.errors).length).toBe(2);
+
+      act(() => {
+        result.current.clearFieldError();
+      });
+
+      expect(result.current.errors).toEqual({});
+      expect(result.current.isValid).toBe(true);
+    });
+  });
+
+  describe('validate', () => {
+    it('validates a single field and returns true when valid', () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: '' },
+        }),
+      );
+
+      let isValid: boolean;
+      act(() => {
+        isValid = result.current.validate('email');
+      });
+
+      expect(isValid!).toBe(true);
+      expect(result.current.errors.email).toBeUndefined();
+    });
+
+    it('validates a single field and returns false when invalid', () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'invalid', password: '' },
+        }),
+      );
+
+      let isValid: boolean;
+      act(() => {
+        isValid = result.current.validate('email');
+      });
+
+      expect(isValid!).toBe(false);
+      expect(result.current.errors.email).toEqual({
+        code: 'INVALID_FORMAT',
+        message: 'Invalid email format',
+      });
+    });
+
+    it('validates all fields when called without arguments', () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: '', password: '' },
+        }),
+      );
+
+      let isValid: boolean;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid!).toBe(false);
+      expect(result.current.errors.email).toBeDefined();
+      expect(result.current.errors.password).toBeDefined();
+    });
+
+    it('validates all fields and returns true when all valid', () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'test@example.com', password: 'Password1' },
+        }),
+      );
+
+      let isValid: boolean;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid!).toBe(true);
+      expect(result.current.errors).toEqual({});
+    });
+
+    it('clears previous error when field becomes valid', () => {
+      const { result } = renderHook(() =>
+        useForm(loginSchema, {
+          defaultValues: { email: 'invalid', password: 'Password1' },
+        }),
+      );
+
+      act(() => {
+        result.current.validate('email');
+      });
+      expect(result.current.errors.email).toBeDefined();
+
+      act(() => {
+        result.current.setFieldValue('email', 'test@example.com');
+      });
+
+      act(() => {
+        result.current.validate('email');
+      });
+      expect(result.current.errors.email).toBeUndefined();
+    });
+  });
+
   describe('field()', () => {
     it('returns FieldState with current values', () => {
       const { result } = renderHook(() =>

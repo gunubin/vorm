@@ -28,6 +28,9 @@ export type FormState<TFields extends Record<string, FieldSchema<any, any, boole
   reset: (values?: Partial<FormInputValues<TFields>>) => void;
   setFieldValue: (name: string, value: any) => void;
   setFieldTouched: (name: string) => void;
+  setFieldError: (name: string & keyof TFields, error: FieldError) => void;
+  clearFieldError: (name?: string & keyof TFields) => void;
+  validate: (name?: string & keyof TFields) => boolean;
   field: <TName extends string & keyof TFields>(
     name: TName,
   ) => FieldState<TFields[TName] extends FieldSchema<infer TInput, any, any> ? TInput : never>;
@@ -89,6 +92,57 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
       }
     },
     [mode, values, validateSingleField],
+  );
+
+  const setFieldError = useCallback(
+    (name: string, error: FieldError) => {
+      setErrors((prev) => ({ ...prev, [name]: error }));
+    },
+    [],
+  );
+
+  const clearFieldError = useCallback(
+    (name?: string) => {
+      if (name) {
+        setErrors((prev) => {
+          const next = { ...prev };
+          delete next[name];
+          return next;
+        });
+      } else {
+        setErrors({});
+      }
+    },
+    [],
+  );
+
+  const validate = useCallback(
+    (name?: string): boolean => {
+      if (name) {
+        const fieldSchema = schema.fields[name];
+        if (!fieldSchema) return true;
+        const formMessages = schema.messages?.[name];
+        const error = validateField(
+          (values as Record<string, unknown>)[name],
+          fieldSchema,
+          formMessages,
+        );
+        setErrors((prev) => {
+          const next = { ...prev };
+          if (error) {
+            next[name] = error;
+          } else {
+            delete next[name];
+          }
+          return next;
+        });
+        return !error;
+      }
+      const formErrors = validateForm(values, schema);
+      setErrors(formErrors);
+      return Object.keys(formErrors).length === 0;
+    },
+    [values, schema],
   );
 
   const handleSubmit = useCallback(
@@ -153,6 +207,9 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
     reset,
     setFieldValue,
     setFieldTouched,
+    setFieldError,
+    clearFieldError,
+    validate,
     field,
     schema,
     mode,

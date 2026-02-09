@@ -1,6 +1,7 @@
 import { expectTypeOf } from 'vitest';
 import { z } from 'zod';
-import type { ValidationRule } from '@vorm/core';
+import { vo, createField, createFormSchema } from '@vorm/core';
+import type { ValidationRule, Brand, Infer, VODefinition, FormOutputValues, FormInputValues } from '@vorm/core';
 import { fromZod } from '../../from-zod.js';
 
 describe('fromZod 型テスト', () => {
@@ -12,5 +13,44 @@ describe('fromZod 型テスト', () => {
   it('fromZod<number> → ValidationRule<number>[]', () => {
     const rules = fromZod(z.number().min(0));
     expectTypeOf(rules).toEqualTypeOf<ValidationRule<number>[]>();
+  });
+});
+
+describe('fromZod → vo() ブランド型フロー', () => {
+  const Email = vo('Email', fromZod(z.string().email()));
+  const Password = vo('Password', fromZod(z.string().min(8)));
+
+  it('fromZod → vo() → VODefinition<string, B>', () => {
+    expectTypeOf(Email).toEqualTypeOf<VODefinition<string, 'Email'>>();
+    expectTypeOf(Password).toEqualTypeOf<VODefinition<string, 'Password'>>();
+  });
+
+  it('create() は Brand<string, B> を返す', () => {
+    const email = Email.create('test@example.com');
+    expectTypeOf(email).toEqualTypeOf<Brand<string, 'Email'>>();
+  });
+
+  it('Infer で型を抽出できる', () => {
+    type EmailType = Infer<typeof Email>;
+    expectTypeOf<EmailType>().toEqualTypeOf<Brand<string, 'Email'>>();
+  });
+
+  it('フォーム全体のブランド型フロー', () => {
+    const emailField = createField(Email);
+    const passwordField = createField(Password);
+    const schema = createFormSchema({
+      fields: {
+        email: emailField({ required: true }),
+        password: passwordField({ required: true }),
+      },
+    });
+
+    type Output = FormOutputValues<typeof schema.fields>;
+    type Input = FormInputValues<typeof schema.fields>;
+
+    expectTypeOf<Output['email']>().toEqualTypeOf<Brand<string, 'Email'>>();
+    expectTypeOf<Output['password']>().toEqualTypeOf<Brand<string, 'Password'>>();
+    expectTypeOf<Input['email']>().toEqualTypeOf<string>();
+    expectTypeOf<Input['password']>().toEqualTypeOf<string>();
   });
 });

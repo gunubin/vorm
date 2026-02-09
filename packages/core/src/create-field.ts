@@ -1,21 +1,21 @@
-import type { Brand, VODefinition, FieldSchema, ErrorMessages, ValidationRule } from './types.js';
+import type { VOLike, FieldSchema, ErrorMessages, ValidationRule } from './types.js';
 
-export function createField<TInput, TBrand extends string>(
-  vo: VODefinition<TInput, TBrand>,
+export function createField<TInput, TOutput>(
+  vo: VOLike<TInput, TOutput>,
 ): {
-  (config: { required: true; messages?: ErrorMessages }): FieldSchema<TInput, Brand<TInput, TBrand>, true>;
-  (config?: { required?: false; messages?: ErrorMessages }): FieldSchema<TInput, Brand<TInput, TBrand>, false>;
+  (config: { required: true; messages?: ErrorMessages }): FieldSchema<TInput, TOutput, true>;
+  (config?: { required?: false; messages?: ErrorMessages }): FieldSchema<TInput, TOutput, false>;
 };
 export function createField<T>(config: { required: true; rules?: ValidationRule<T>[]; messages?: ErrorMessages }): FieldSchema<T, T, true>;
 export function createField<T>(config?: { required?: false; rules?: ValidationRule<T>[]; messages?: ErrorMessages }): FieldSchema<T, T, false>;
-export function createField<T, TBrand extends string>(
-  voOrConfig?: VODefinition<T, TBrand> | { required?: boolean; rules?: ValidationRule<T>[]; messages?: ErrorMessages },
+export function createField<T, TOutput>(
+  voOrConfig?: VOLike<T, TOutput> | { required?: boolean; rules?: ValidationRule<T>[]; messages?: ErrorMessages },
 ): any {
-  if (voOrConfig && 'brand' in voOrConfig && 'parse' in voOrConfig) {
-    const voDef = voOrConfig as VODefinition<T, TBrand>;
-    function factory(config: { required: true; messages?: ErrorMessages }): FieldSchema<T, Brand<T, TBrand>, true>;
-    function factory(config?: { required?: false; messages?: ErrorMessages }): FieldSchema<T, Brand<T, TBrand>, false>;
-    function factory(config: { required?: boolean; messages?: ErrorMessages } = {}): FieldSchema<T, Brand<T, TBrand>, boolean> {
+  if (voOrConfig && 'rules' in voOrConfig && 'create' in voOrConfig) {
+    const voDef = voOrConfig as VOLike<T, TOutput>;
+    function factory(config: { required: true; messages?: ErrorMessages }): FieldSchema<T, TOutput, true>;
+    function factory(config?: { required?: false; messages?: ErrorMessages }): FieldSchema<T, TOutput, false>;
+    function factory(config: { required?: boolean; messages?: ErrorMessages } = {}): FieldSchema<T, TOutput, boolean> {
       const required = config.required ?? false;
       return {
         vo: voDef,

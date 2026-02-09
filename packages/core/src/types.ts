@@ -5,18 +5,34 @@ export type ValidationRule<T> = {
   validate: (value: T) => boolean;
 };
 
+export type CreateResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: { code: string } };
+
 export type VODefinition<TInput, TBrand extends string> = {
   brand: TBrand;
   rules: ValidationRule<TInput>[];
-  parse: (input: TInput) => Brand<TInput, TBrand>;
+  create: (input: TInput) => Brand<TInput, TBrand>;
+  safeCreate: (input: TInput) => CreateResult<Brand<TInput, TBrand>>;
 };
+
+export type Infer<D> = D extends VODefinition<infer T, infer B>
+  ? Brand<T, B>
+  : D extends { create: (input: any) => infer R }
+    ? R
+    : never;
 
 export type ErrorMessageMap = Record<string, string>;
 export type ErrorMessageFn = (error: { code: string }) => string;
 export type ErrorMessages = ErrorMessageMap | ErrorMessageFn;
 
+export type VOLike<TInput, TOutput> = {
+  rules: ValidationRule<TInput>[];
+  create: (input: TInput) => TOutput;
+};
+
 export type FieldSchema<TInput, TOutput, TRequired extends boolean> = {
-  vo: VODefinition<TInput, string> | null;
+  vo: VOLike<TInput, TOutput> | null;
   required: TRequired;
   messages: ErrorMessages;
   rules: ValidationRule<TInput>[];

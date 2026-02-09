@@ -41,7 +41,7 @@ describe('vo', () => {
     const PasswordVO = vo('Password', [minLength(8)]);
 
     expect(() => PasswordVO.create('short')).toThrow(VOValidationError);
-    expect(() => PasswordVO.create('short')).toThrow('Password is not valid');
+    expect(() => PasswordVO.create('short')).toThrow('Password is not valid (TOO_SHORT)');
   });
 
   it('safeCreate が有効な値で success を返す', () => {

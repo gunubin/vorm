@@ -11,7 +11,7 @@ export function createField<T>(config?: { required?: false; rules?: ValidationRu
 export function createField<T, TOutput>(
   voOrConfig?: VOLike<T, TOutput> | { required?: boolean; rules?: ValidationRule<T>[]; messages?: ErrorMessages },
 ): any {
-  if (voOrConfig && 'rules' in voOrConfig && 'create' in voOrConfig) {
+  if (voOrConfig && 'rules' in voOrConfig && 'create' in voOrConfig && typeof (voOrConfig as any).create === 'function') {
     const voDef = voOrConfig as VOLike<T, TOutput>;
     function factory(config: { required: true; messages?: ErrorMessages }): FieldSchema<T, TOutput, true>;
     function factory(config?: { required?: false; messages?: ErrorMessages }): FieldSchema<T, TOutput, false>;

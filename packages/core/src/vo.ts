@@ -6,7 +6,7 @@ export class VOValidationError extends Error {
     public readonly code: string,
     public readonly input: unknown,
   ) {
-    super(`${brand} is not valid: ${JSON.stringify(input)} (${code})`);
+    super(`${brand} is not valid (${code})`);
     this.name = 'VOValidationError';
   }
 }

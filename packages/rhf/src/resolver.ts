@@ -26,12 +26,12 @@ function applyParse(
 }
 
 /**
- * @vorm/core の FormSchema から React Hook Form 互換の Resolver を生成する。
+ * Create a React Hook Form-compatible Resolver from a @vorm/core FormSchema.
  *
- * - RHF は string を保持するため、resolver 側で parse を適用
- * - バリデーションは @vorm/core の validateForm に委譲
- * - 成功時は VO の create() を通して Branded Type に変換した値を返す
- * - RHF の useForm にそのまま渡せる
+ * - RHF holds string values, so parse is applied in the resolver
+ * - Validation is delegated to @vorm/core's validateForm
+ * - On success, values are converted to Branded Types via VO's create()
+ * - Can be passed directly to RHF's useForm
  */
 export function createVormResolver<TFields extends AnyFields>(
   schema: FormSchema<TFields>,

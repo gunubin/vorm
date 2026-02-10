@@ -1,6 +1,15 @@
 {
   "name": "vorm",
   "private": true,
+  "homepage": "https://github.com/gunubin/vorm#readme",
+  "bugs": {
+    "url": "https://github.com/gunubin/vorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gunubin/vorm.git"
+  },
+  "license": "MIT",
   "scripts": {
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",

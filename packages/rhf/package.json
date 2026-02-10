@@ -10,6 +10,10 @@
     "url": "https://github.com/gunubin/vorm.git",
     "directory": "packages/rhf"
   },
+  "homepage": "https://github.com/gunubin/vorm#readme",
+  "bugs": {
+    "url": "https://github.com/gunubin/vorm/issues"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

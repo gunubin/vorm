@@ -3,10 +3,12 @@ import { BasicLogin } from './examples/BasicLogin';
 import { FieldComparison } from './examples/FieldComparison';
 import { ZodIntegration } from './examples/ZodIntegration';
 import { ValidationModes } from './examples/ValidationModes';
+import { RHFIntegration } from './examples/RHFIntegration';
 import './App.css';
 
 const tabs = [
   { id: 'basic', label: 'Basic Login', component: BasicLogin },
+  { id: 'rhf', label: 'RHF Integration', component: RHFIntegration },
   { id: 'comparison', label: 'Field Comparison', component: FieldComparison },
   { id: 'zod', label: 'Zod Integration', component: ZodIntegration },
   { id: 'modes', label: 'Validation Modes', component: ValidationModes },

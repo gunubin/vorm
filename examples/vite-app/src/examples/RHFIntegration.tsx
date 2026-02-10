@@ -19,22 +19,22 @@ const Password = vo('Password', [minLength(8)]);
 type Password = Infer<typeof Password>;
 
 const emailField = createField(Email, {
-  messages: { email: 'メールアドレスの形式が正しくありません' },
+  messages: { email: 'Invalid email format' },
 });
 const passwordField = createField(Password, {
-  messages: { minLength: '8文字以上で入力してください' },
+  messages: { minLength: 'Must be at least 8 characters' },
 });
 
 const schema = createFormSchema({
   fields: {
-    email: emailField({ required: true, messages: { REQUIRED: '必須です' } }),
-    password: passwordField({ required: true, messages: { REQUIRED: '必須です' } }),
+    email: emailField({ required: true, messages: { REQUIRED: 'Required' } }),
+    password: passwordField({ required: true, messages: { REQUIRED: 'Required' } }),
   },
 });
 
 export function RHFIntegration() {
-  // useVorm = RHF の useForm + createVormResolver を設定するだけ
-  // 返り値は RHF の UseFormReturn そのもの
+  // useVorm = RHF's useForm + createVormResolver setup
+  // Return value is RHF's UseFormReturn as-is
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useVorm(schema, {
     defaultValues: { email: '', password: '' },
     mode: 'onBlur',
@@ -43,7 +43,7 @@ export function RHFIntegration() {
   const onSubmit = handleSubmit((values) => {
     // values.email: Brand<string, 'Email'>
     // values.password: Brand<string, 'Password'>
-    // 型安全: const cross: Password = values.email; → 型エラー
+    // Type-safe: const cross: Password = values.email; -> type error
     alert(JSON.stringify(values, null, 2));
   });
 
@@ -51,8 +51,8 @@ export function RHFIntegration() {
     <div>
       <h2>RHF Integration (@vorm/rhf)</h2>
       <p className="description">
-        React Hook Form の API をそのまま使いつつ、submit 時に Branded Type を受け取る。
-        register, formState, watch 等は全て RHF 標準。パフォーマンスも RHF と同一（uncontrolled / ref ベース）。
+        Use React Hook Form API as-is while receiving Branded Types on submit.
+        register, formState, watch, etc. are all standard RHF. Performance is identical to RHF (uncontrolled / ref-based).
       </p>
 
       <form onSubmit={onSubmit}>

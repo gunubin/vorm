@@ -14,16 +14,16 @@ const Password = vo('Password', fromZod(passwordSchema));
 type Password = Infer<typeof Password>;
 
 const emailField = createField(Email, {
-  messages: { email: 'メールアドレスの形式が正しくありません' },
+  messages: { email: 'Invalid email format' },
 });
 const passwordField = createField(Password, {
-  messages: { min: '8文字以上で入力してください' },
+  messages: { min: 'Must be at least 8 characters' },
 });
 
 const schema = createFormSchema({
   fields: {
-    email: emailField({ required: true, messages: { REQUIRED: '必須です' } }),
-    password: passwordField({ required: true, messages: { REQUIRED: '必須です' } }),
+    email: emailField({ required: true, messages: { REQUIRED: 'Required' } }),
+    password: passwordField({ required: true, messages: { REQUIRED: 'Required' } }),
   },
 });
 
@@ -40,7 +40,7 @@ export function ZodIntegration() {
     <div>
       <h2>Zod Integration</h2>
       <p className="description">
-        zod スキーマから fromZod() でバリデーションルールを自動生成。z.string().email() や z.string().min(8) がそのまま使える。
+        Auto-generate validation rules from zod schemas via fromZod(). Works directly with z.string().email() and z.string().min(8).
       </p>
 
       <form onSubmit={form.handleSubmit((v) => alert(JSON.stringify(v)))}>

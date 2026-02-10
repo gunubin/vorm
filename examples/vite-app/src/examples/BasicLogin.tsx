@@ -12,7 +12,7 @@ const emailPattern = createRule<string>(
   (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
 );
 
-// --- vo() で定義 ---
+// --- Defined with vo() ---
 const Email = vo('Email', [emailPattern()]);
 type Email = Infer<typeof Email>;
 
@@ -20,16 +20,16 @@ const Password = vo('Password', [minLength(8)]);
 type Password = Infer<typeof Password>;
 
 const emailField = createField(Email, {
-  messages: { email: 'メールアドレスの形式が正しくありません' },
+  messages: { email: 'Invalid email format' },
 });
 const passwordField = createField(Password, {
-  messages: { minLength: '8文字以上で入力してください' },
+  messages: { minLength: 'Must be at least 8 characters' },
 });
 
 const schema = createFormSchema({
   fields: {
-    email: emailField({ required: true, messages: { REQUIRED: '必須です' } }),
-    password: passwordField({ required: true, messages: { REQUIRED: '必須です' } }),
+    email: emailField({ required: true, messages: { REQUIRED: 'Required' } }),
+    password: passwordField({ required: true, messages: { REQUIRED: 'Required' } }),
   },
 });
 
@@ -44,7 +44,7 @@ export function BasicLogin() {
 
   const onSubmit = form.handleSubmit((values) => {
     // values.email: Email (branded), values.password: Password (branded)
-    // 型安全: const cross: Password = values.email; → 型エラー
+    // Type-safe: const cross: Password = values.email; -> type error
     alert(JSON.stringify(values, null, 2));
   });
 
@@ -52,8 +52,8 @@ export function BasicLogin() {
     <div>
       <h2>Basic Login Form</h2>
       <p className="description">
-        vo() でバリデーション付き値オブジェクトを定義。create() で型安全に生成、safeCreate() で安全に生成。
-        フォームでは useForm が rules を内部で使うだけ。
+        Define validated value objects with vo(). Type-safe creation with create(), safe creation with safeCreate().
+        In forms, useForm uses the rules internally.
       </p>
 
       <form onSubmit={onSubmit}>

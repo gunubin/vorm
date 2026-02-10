@@ -10,11 +10,11 @@ type UseVormProps<TFields extends AnyFields> = Omit<
 >;
 
 /**
- * RHF の useForm に resolver とジェネリクスを設定するだけの薄いラッパー。
+ * A thin wrapper around RHF's useForm that sets up the resolver and generics.
  *
- * - register, watch, formState 等は RHF そのまま
- * - handleSubmit のコールバックで FormOutputValues（Branded Type）を受け取れる
- * - パフォーマンス特性は RHF と同一（uncontrolled / ref ベース）
+ * - register, watch, formState, etc. work exactly as in RHF
+ * - handleSubmit callback receives FormOutputValues (Branded Types)
+ * - Performance characteristics are identical to RHF (uncontrolled / ref-based)
  */
 export function useVorm<TFields extends AnyFields>(
   schema: FormSchema<TFields>,

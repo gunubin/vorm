@@ -12,45 +12,45 @@ const PasswordVO = vo('Password', [
 const passwordField = createField(PasswordVO);
 
 describe('validateField', () => {
-  describe('required チェック', () => {
+  describe('required check', () => {
     const field = passwordField({ required: true, messages: { REQUIRED: 'Required' } });
 
-    it('空文字は REQUIRED エラー', () => {
+    it('returns REQUIRED error for empty string', () => {
       const error = validateField('', field);
       expect(error).toEqual({ code: 'REQUIRED', message: 'Required' });
     });
 
-    it('undefined は REQUIRED エラー', () => {
+    it('returns REQUIRED error for undefined', () => {
       const error = validateField(undefined, field);
       expect(error).toEqual({ code: 'REQUIRED', message: 'Required' });
     });
 
-    it('null は REQUIRED エラー', () => {
+    it('returns REQUIRED error for null', () => {
       const error = validateField(null, field);
       expect(error).toEqual({ code: 'REQUIRED', message: 'Required' });
     });
   });
 
-  describe('required: false で空値の場合', () => {
+  describe('required: false with empty value', () => {
     const field = passwordField({ required: false });
 
-    it('空文字はエラーなし（ルールスキップ）', () => {
+    it('returns no error for empty string (rules skipped)', () => {
       const error = validateField('', field);
       expect(error).toBeNull();
     });
 
-    it('undefined はエラーなし', () => {
+    it('returns no error for undefined', () => {
       const error = validateField(undefined, field);
       expect(error).toBeNull();
     });
 
-    it('null はエラーなし', () => {
+    it('returns no error for null', () => {
       const error = validateField(null, field);
       expect(error).toBeNull();
     });
   });
 
-  describe('VO ルール', () => {
+  describe('VO rules', () => {
     const field = passwordField({
       required: true,
       messages: {
@@ -61,23 +61,23 @@ describe('validateField', () => {
       },
     });
 
-    it('定義順に実行、最初の失敗で停止', () => {
+    it('executes in definition order and stops at first failure', () => {
       const error = validateField('short', field);
       expect(error).toEqual({ code: 'TOO_SHORT', message: 'At least 8 characters' });
     });
 
-    it('最初のルール通過後、次のルールで失敗', () => {
+    it('fails on next rule after first rule passes', () => {
       const error = validateField('longpassword', field);
       expect(error).toEqual({ code: 'NO_UPPERCASE', message: 'Must contain uppercase' });
     });
 
-    it('全ルール通過で null', () => {
+    it('returns null when all rules pass', () => {
       const error = validateField('Password1', field);
       expect(error).toBeNull();
     });
   });
 
-  describe('プリミティブフィールドのカスタムルール', () => {
+  describe('custom rules for primitive field', () => {
     const nameField = createField<string>({
       rules: [
         { code: 'TOO_LONG', validate: (v) => v.length <= 100 },
@@ -88,19 +88,19 @@ describe('validateField', () => {
       },
     })({ required: true });
 
-    it('カスタムルール通過', () => {
+    it('passes custom rule', () => {
       const error = validateField('Test', nameField);
       expect(error).toBeNull();
     });
 
-    it('カスタムルール違反', () => {
+    it('fails custom rule', () => {
       const error = validateField('a'.repeat(101), nameField);
       expect(error).toEqual({ code: 'TOO_LONG', message: 'Must be 100 characters or less' });
     });
   });
 
-  describe('parse 済みの値に対して直接バリデーション', () => {
-    it('数値フィールドの検証（parse 後の number に対して）', () => {
+  describe('validates directly against pre-parsed values', () => {
+    it('validates number field (against parsed number)', () => {
       const field = createField<number>({
         rules: [
           { code: 'POSITIVE', validate: (v) => v > 0 },
@@ -111,7 +111,7 @@ describe('validateField', () => {
       expect(validateField(-1, field)).toEqual({ code: 'POSITIVE', message: 'POSITIVE' });
     });
 
-    it('required チェックは空値に対して行われる', () => {
+    it('performs required check against empty values', () => {
       const field = createField<number>({
         rules: [
           { code: 'POSITIVE', validate: (v) => v > 0 },

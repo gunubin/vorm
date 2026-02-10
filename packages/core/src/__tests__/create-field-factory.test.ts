@@ -8,12 +8,12 @@ const PasswordVO = vo('Password', [
 ]);
 
 describe('createField (VO)', () => {
-  it('VO定義からファクトリ関数を生成する', () => {
+  it('creates a factory function from VO definition', () => {
     const passwordField = createField(PasswordVO);
     expect(typeof passwordField).toBe('function');
   });
 
-  it('ファクトリが FieldSchema を返す', () => {
+  it('factory returns a FieldSchema', () => {
     const passwordField = createField(PasswordVO);
     const field = passwordField({ required: true });
 
@@ -22,28 +22,28 @@ describe('createField (VO)', () => {
     expect(field.rules).toHaveLength(2);
   });
 
-  it('required: true で FieldSchema を生成する', () => {
+  it('creates FieldSchema with required: true', () => {
     const passwordField = createField(PasswordVO);
     const field = passwordField({ required: true });
 
     expect(field.required).toBe(true);
   });
 
-  it('required: false で FieldSchema を生成する', () => {
+  it('creates FieldSchema with required: false', () => {
     const passwordField = createField(PasswordVO);
     const field = passwordField({ required: false });
 
     expect(field.required).toBe(false);
   });
 
-  it('引数省略時は required: false', () => {
+  it('defaults to required: false when no arguments', () => {
     const passwordField = createField(PasswordVO);
     const field = passwordField();
 
     expect(field.required).toBe(false);
   });
 
-  it('ファクトリレベルで Record 形式のメッセージを設定できる', () => {
+  it('sets Record-style messages at factory level', () => {
     const passwordField = createField(PasswordVO);
     const field = passwordField({
       required: true,
@@ -59,22 +59,22 @@ describe('createField (VO)', () => {
     });
   });
 
-  it('定義レベルでメッセージを設定できる', () => {
+  it('sets messages at definition level', () => {
     const passwordField = createField(PasswordVO, {
       messages: {
-        TOO_SHORT: 'definition: 8文字以上',
-        NO_UPPERCASE: 'definition: 大文字必須',
+        TOO_SHORT: 'definition: Must be at least 8 characters',
+        NO_UPPERCASE: 'definition: Uppercase required',
       },
     });
     const field = passwordField({ required: true });
 
     expect(field.messages).toEqual({
-      TOO_SHORT: 'definition: 8文字以上',
-      NO_UPPERCASE: 'definition: 大文字必須',
+      TOO_SHORT: 'definition: Must be at least 8 characters',
+      NO_UPPERCASE: 'definition: Uppercase required',
     });
   });
 
-  it('定義とファクトリのメッセージをマージ（ファクトリ優先）', () => {
+  it('merges definition and factory messages (factory takes precedence)', () => {
     const passwordField = createField(PasswordVO, {
       messages: {
         TOO_SHORT: 'definition level',
@@ -96,7 +96,7 @@ describe('createField (VO)', () => {
     });
   });
 
-  it('ファクトリレベルで関数形式のメッセージを設定できる', () => {
+  it('sets function-style messages at factory level', () => {
     const messageFn = ({ code }: { code: string }) => `Error: ${code}`;
     const passwordField = createField(PasswordVO);
     const field = passwordField({
@@ -107,7 +107,7 @@ describe('createField (VO)', () => {
     expect(field.messages).toBe(messageFn);
   });
 
-  it('VO のルールが FieldSchema に継承される', () => {
+  it('inherits VO rules in FieldSchema', () => {
     const passwordField = createField(PasswordVO);
     const field = passwordField({ required: true });
 
@@ -116,7 +116,7 @@ describe('createField (VO)', () => {
     expect(field.rules[1].code).toBe('NO_UPPERCASE');
   });
 
-  it('定義レベルで parse を設定できる', () => {
+  it('sets parse at definition level', () => {
     const passwordField = createField(PasswordVO, {
       parse: (v: string) => v.trim(),
     });
@@ -126,7 +126,7 @@ describe('createField (VO)', () => {
     expect(field.parse!('  Password1  ')).toBe('Password1');
   });
 
-  it('定義レベルで format を設定できる', () => {
+  it('sets format at definition level', () => {
     const passwordField = createField(PasswordVO, {
       format: (v: string) => v.toUpperCase(),
     });
@@ -136,7 +136,7 @@ describe('createField (VO)', () => {
     expect(field.format!('Password1')).toBe('PASSWORD1');
   });
 
-  it('parse と format を両方設定できる', () => {
+  it('sets both parse and format', () => {
     const passwordField = createField(PasswordVO, {
       parse: (v: string) => v.trim(),
       format: (v: string) => v.toUpperCase(),

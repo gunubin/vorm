@@ -9,48 +9,48 @@ const PasswordVO = vo('Password', [
   { code: 'TOO_SHORT', validate: (v: string) => v.length >= 8 },
 ]);
 
-describe('createField (VO) 型推論', () => {
+describe('createField (VO) type inference', () => {
   const passwordField = createField(PasswordVO);
 
-  it('required: true → FieldSchema<string, Password, true>', () => {
+  it('required: true yields FieldSchema<string, Password, true>', () => {
     const field = passwordField({ required: true });
     expectTypeOf(field.required).toEqualTypeOf<true>();
     expectTypeOf(field).toMatchTypeOf<FieldSchema<string, Password, true, 'TOO_SHORT'>>();
   });
 
-  it('required: false → FieldSchema<string, Password, false>', () => {
+  it('required: false yields FieldSchema<string, Password, false>', () => {
     const field = passwordField({ required: false });
     expectTypeOf(field.required).toEqualTypeOf<false>();
     expectTypeOf(field).toMatchTypeOf<FieldSchema<string, Password, false, 'TOO_SHORT'>>();
   });
 
-  it('引数省略 → FieldSchema<string, Password, false> (デフォルト false)', () => {
+  it('no arguments defaults to FieldSchema<string, Password, false>', () => {
     const field = passwordField();
     expectTypeOf(field.required).toEqualTypeOf<false>();
   });
 });
 
-describe('createField (primitive) 型推論', () => {
-  it('createField<string>()() → FieldSchema<string, string, false>', () => {
+describe('createField (primitive) type inference', () => {
+  it('createField<string>()() yields FieldSchema<string, string, false>', () => {
     const field = createField<string>()();
     expectTypeOf(field).toMatchTypeOf<FieldSchema<string, string, false>>();
     expectTypeOf(field.required).toEqualTypeOf<false>();
   });
 
-  it('createField<string>()({ required: true }) → FieldSchema<string, string, true>', () => {
+  it('createField<string>()({ required: true }) yields FieldSchema<string, string, true>', () => {
     const field = createField<string>()({ required: true });
     expectTypeOf(field).toMatchTypeOf<FieldSchema<string, string, true>>();
     expectTypeOf(field.required).toEqualTypeOf<true>();
   });
 
-  it('createField はファクトリ関数を返す', () => {
+  it('createField returns a factory function', () => {
     const factory = createField<string>();
     expectTypeOf(factory).toBeFunction();
   });
 });
 
-describe('parse/format 型推論', () => {
-  it('parse の型: (raw: string) => T', () => {
+describe('parse/format type inference', () => {
+  it('parse type: (raw: string) => T', () => {
     const field = createField<number>({
       parse: (v: string) => Number(v),
       format: (v: number) => String(v),

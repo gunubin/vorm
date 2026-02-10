@@ -11,12 +11,12 @@ const Name = vo('Name', [minLength(2)]);
 type Name = Infer<typeof Name>;
 
 const nameField = createField(Name, {
-  messages: { minLength: '2文字以上で入力してください' },
+  messages: { minLength: 'Must be at least 2 characters' },
 });
 
 const schema = createFormSchema({
   fields: {
-    name: nameField({ required: true, messages: { REQUIRED: '必須です' } }),
+    name: nameField({ required: true, messages: { REQUIRED: 'Required' } }),
   },
 });
 
@@ -58,7 +58,7 @@ export function ValidationModes() {
     <div>
       <h2>Validation Modes</h2>
       <p className="description">
-        同じスキーマを onChange / onBlur / onSubmit の3モードで並列表示。入力してバリデーション発火タイミングの違いを比較。
+        Same schema displayed in 3 modes: onChange / onBlur / onSubmit. Type to compare validation trigger timing.
       </p>
       <div className="three-columns">
         <ModeForm mode="onChange" label="onChange" />

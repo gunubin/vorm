@@ -29,7 +29,7 @@ const loginSchema = createFormSchema({
 describe('createVormResolver', () => {
   const resolver = createVormResolver(loginSchema);
 
-  it('RHF FieldErrors 形式で required エラーを返す', async () => {
+  it('returns required errors in RHF FieldErrors format', async () => {
     const result = await resolver(
       { email: '', password: '' },
       undefined,
@@ -47,7 +47,7 @@ describe('createVormResolver', () => {
     expect(result.values).toEqual({});
   });
 
-  it('バリデーションルールエラーを返す', async () => {
+  it('returns validation rule errors', async () => {
     const result = await resolver(
       { email: 'invalid', password: 'short' },
       undefined,
@@ -64,7 +64,7 @@ describe('createVormResolver', () => {
     });
   });
 
-  it('バリデーション通過時に VO Branded Type の値を返す', async () => {
+  it('returns VO Branded Type values when validation passes', async () => {
     const result = await resolver(
       { email: 'test@example.com', password: 'Password1' },
       undefined,
@@ -81,7 +81,7 @@ describe('createVormResolver', () => {
     expect(result.values.password).toBe('Password1');
   });
 
-  it('空の optional フィールドは undefined を返す', async () => {
+  it('returns undefined for empty optional field', async () => {
     const schema = createFormSchema({
       fields: {
         email: emailField({ required: true, messages: { REQUIRED: 'Required' } }),
@@ -101,7 +101,7 @@ describe('createVormResolver', () => {
     expect(result.values.nickname).toBeUndefined();
   });
 
-  it('VO なしのフィールドは値をそのまま返す', async () => {
+  it('returns value as-is for field without VO', async () => {
     const schema = createFormSchema({
       fields: {
         name: createField<string>({ messages: { REQUIRED: 'Name required' } })({ required: true }),
@@ -119,8 +119,8 @@ describe('createVormResolver', () => {
     expect(result.values.name).toBe('John');
   });
 
-  describe('parse 適用', () => {
-    it('string → parse → validate → vo.create のパイプライン', async () => {
+  describe('parse application', () => {
+    it('runs string -> parse -> validate -> vo.create pipeline', async () => {
       const PriceVO = vo('Price', [
         { code: 'POSITIVE', validate: (v: number) => v > 0 },
       ]);
@@ -135,7 +135,7 @@ describe('createVormResolver', () => {
 
       const r = createVormResolver(schema);
 
-      // 有効な値
+      // Valid value
       const result = await r(
         { price: '1,000' } as any,
         undefined,
@@ -144,7 +144,7 @@ describe('createVormResolver', () => {
       expect(result.errors).toEqual({});
       expect(result.values.price).toBe(1000);
 
-      // バリデーション失敗
+      // Validation failure
       const result2 = await r(
         { price: '-1' } as any,
         undefined,
@@ -157,7 +157,7 @@ describe('createVormResolver', () => {
     });
   });
 
-  describe('クロスフィールド resolver', () => {
+  describe('cross-field resolver', () => {
     const signupSchema = createFormSchema({
       fields: {
         password: passwordField({ required: true, messages: { REQUIRED: 'Required' } }),
@@ -173,7 +173,7 @@ describe('createVormResolver', () => {
       },
     });
 
-    it('クロスフィールドバリデーションエラー', async () => {
+    it('returns cross-field validation error', async () => {
       const r = createVormResolver(signupSchema);
       const result = await r(
         { password: 'Password1', confirmPassword: 'Different1' },
@@ -187,7 +187,7 @@ describe('createVormResolver', () => {
       });
     });
 
-    it('クロスフィールドバリデーション通過', async () => {
+    it('passes cross-field validation', async () => {
       const r = createVormResolver(signupSchema);
       const result = await r(
         { password: 'Password1', confirmPassword: 'Password1' },

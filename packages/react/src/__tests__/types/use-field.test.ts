@@ -18,23 +18,23 @@ const schema = createFormSchema({
 
 type SchemaFields = typeof schema.fields;
 
-describe('useField 型テスト', () => {
-  it('value の型はフィールドの入力型（branded ではない）', () => {
+describe('useField type tests', () => {
+  it('value type is the field input type (not branded)', () => {
     type EmailFieldState = ReturnType<typeof useField<SchemaFields, 'email'>>;
     expectTypeOf<EmailFieldState['value']>().toEqualTypeOf<string>();
   });
 
-  it('name パラメータはスキーマのフィールド名に制約される', () => {
+  it('name parameter is constrained to schema field names', () => {
     type AllowedNames = string & keyof SchemaFields;
     expectTypeOf<AllowedNames>().toEqualTypeOf<'email' | 'name'>();
   });
 
-  it('onChange は string を受け取る', () => {
+  it('onChange receives string', () => {
     type EmailFieldState = ReturnType<typeof useField<SchemaFields, 'email'>>;
     expectTypeOf<EmailFieldState['onChange']>().toEqualTypeOf<(raw: string) => void>();
   });
 
-  it('formattedValue は string', () => {
+  it('formattedValue is string', () => {
     type EmailFieldState = ReturnType<typeof useField<SchemaFields, 'email'>>;
     expectTypeOf<EmailFieldState['formattedValue']>().toEqualTypeOf<string>();
   });

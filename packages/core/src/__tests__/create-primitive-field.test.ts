@@ -2,40 +2,40 @@ import { describe, it, expect } from 'vitest';
 import { createField } from '../create-field.js';
 
 describe('createField (primitive)', () => {
-  it('ファクトリ関数を返す', () => {
+  it('returns a factory function', () => {
     const factory = createField<string>();
     expect(typeof factory).toBe('function');
   });
 
-  it('ファクトリが vo: null の FieldSchema を返す', () => {
+  it('factory returns a FieldSchema with vo: null', () => {
     const factory = createField<string>();
     const field = factory();
 
     expect(field.vo).toBeNull();
   });
 
-  it('required: true で FieldSchema を生成する', () => {
+  it('creates FieldSchema with required: true', () => {
     const factory = createField<string>();
     const field = factory({ required: true });
 
     expect(field.required).toBe(true);
   });
 
-  it('required: false で FieldSchema を生成する', () => {
+  it('creates FieldSchema with required: false', () => {
     const factory = createField<string>();
     const field = factory({ required: false });
 
     expect(field.required).toBe(false);
   });
 
-  it('引数省略時は required: false', () => {
+  it('defaults to required: false when no arguments', () => {
     const factory = createField<string>();
     const field = factory();
 
     expect(field.required).toBe(false);
   });
 
-  it('定義レベルでカスタムルールを設定できる', () => {
+  it('sets custom rules at definition level', () => {
     const factory = createField<string>({
       rules: [
         { code: 'TOO_LONG', validate: (v) => v.length <= 100 },
@@ -47,7 +47,7 @@ describe('createField (primitive)', () => {
     expect(field.rules[0].code).toBe('TOO_LONG');
   });
 
-  it('定義レベルで Record 形式のメッセージを設定できる', () => {
+  it('sets Record-style messages at definition level', () => {
     const factory = createField<string>({
       messages: {
         TOO_LONG: 'Must be 100 characters or less',
@@ -60,7 +60,7 @@ describe('createField (primitive)', () => {
     });
   });
 
-  it('ファクトリレベルでメッセージを設定できる', () => {
+  it('sets messages at factory level', () => {
     const factory = createField<string>();
     const field = factory({
       required: true,
@@ -74,7 +74,7 @@ describe('createField (primitive)', () => {
     });
   });
 
-  it('定義とファクトリのメッセージをマージ（ファクトリ優先）', () => {
+  it('merges definition and factory messages (factory takes precedence)', () => {
     const factory = createField<string>({
       messages: {
         TOO_LONG: 'definition level',
@@ -94,7 +94,7 @@ describe('createField (primitive)', () => {
     });
   });
 
-  it('関数形式のメッセージを設定できる', () => {
+  it('sets function-style messages', () => {
     const messageFn = ({ code }: { code: string }) => `Error: ${code}`;
     const factory = createField<string>({
       messages: messageFn,
@@ -104,7 +104,7 @@ describe('createField (primitive)', () => {
     expect(field.messages).toBe(messageFn);
   });
 
-  it('ルールとメッセージ省略時はデフォルト値', () => {
+  it('uses default values when rules and messages are omitted', () => {
     const factory = createField<string>();
     const field = factory();
 
@@ -112,7 +112,7 @@ describe('createField (primitive)', () => {
     expect(field.messages).toEqual({});
   });
 
-  it('定義レベルで parse を設定できる', () => {
+  it('sets parse at definition level', () => {
     const factory = createField<string>({
       parse: (v: string) => v.trim(),
     });
@@ -122,7 +122,7 @@ describe('createField (primitive)', () => {
     expect(field.parse!('  hello  ')).toBe('hello');
   });
 
-  it('定義レベルで format を設定できる', () => {
+  it('sets format at definition level', () => {
     const factory = createField<string, number>({
       format: (v: string) => `formatted: ${v}`,
     });
@@ -132,7 +132,7 @@ describe('createField (primitive)', () => {
     expect(field.format!('42')).toBe('formatted: 42');
   });
 
-  it('parse と format を両方設定できる', () => {
+  it('sets both parse and format', () => {
     const factory = createField<number>({
       parse: (v: string) => Number(v.replace(/,/g, '')),
       format: (v: number) => v.toLocaleString(),

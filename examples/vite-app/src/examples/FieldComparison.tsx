@@ -7,11 +7,11 @@ const minLength = createRule<string, number>(
   (value, min) => value.length >= min,
 );
 
-// --- vo() で定義 ---
+// --- Defined with vo() ---
 const Username = vo('Username', [minLength(3)]);
 type Username = Infer<typeof Username>;
 
-// --- 手書きで定義（vo() なし） ---
+// --- Handwritten definition (without vo()) ---
 type Nickname = string & { readonly __brand: 'Nickname' };
 const nicknameRules = [minLength(2)] as const;
 const NicknameDef = {
@@ -20,21 +20,21 @@ const NicknameDef = {
 };
 
 const usernameField = createField(Username, {
-  messages: { minLength: '3文字以上で入力してください' },
+  messages: { minLength: 'Must be at least 3 characters' },
 });
 const nicknameField = createField(NicknameDef, {
-  messages: { minLength: '2文字以上で入力してください' },
+  messages: { minLength: 'Must be at least 2 characters' },
 });
 
 const schemaA = createFormSchema({
   fields: {
-    username: usernameField({ required: true, messages: { REQUIRED: '必須です' } }),
+    username: usernameField({ required: true, messages: { REQUIRED: 'Required' } }),
   },
 });
 
 const schemaB = createFormSchema({
   fields: {
-    nickname: nicknameField({ required: true, messages: { REQUIRED: '必須です' } }),
+    nickname: nicknameField({ required: true, messages: { REQUIRED: 'Required' } }),
   },
 });
 
@@ -48,7 +48,7 @@ function FormWithVO() {
 
   return (
     <div className="column">
-      <h3>vo() で定義</h3>
+      <h3>Defined with vo()</h3>
       <p className="description">vo('Username', rules) → createField → useForm</p>
       <form onSubmit={form.handleSubmit((v) => alert(JSON.stringify(v)))}>
         <div className="form-group">
@@ -81,8 +81,8 @@ function FormWithHandwritten() {
 
   return (
     <div className="column">
-      <h3>手書きで定義</h3>
-      <p className="description">{'{ rules, create }' } を直接定義 → createField → useField</p>
+      <h3>Handwritten definition</h3>
+      <p className="description">{'{ rules, create }' } defined directly → createField → useField</p>
       <form onSubmit={form.handleSubmit((v) => alert(JSON.stringify(v)))}>
         <div className="form-group">
           <label htmlFor="hw-nickname">Nickname</label>
@@ -109,8 +109,8 @@ export function FieldComparison() {
     <div>
       <h2>VO Definition Comparison</h2>
       <p className="description">
-        vo() ファクトリで定義した VO と、手書きで {'{ rules, create }'} を直接定義した VO の比較。
-        どちらも createField に渡せる。
+        Comparing a VO defined with the vo() factory vs. a handwritten {'{ rules, create }'} VO.
+        Both can be passed to createField.
       </p>
       <div className="side-by-side">
         <FormWithVO />

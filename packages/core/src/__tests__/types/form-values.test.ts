@@ -34,46 +34,46 @@ const mixedFormSchema = createFormSchema({
 });
 
 describe('FormInputValues', () => {
-  it('VO 由来のフィールドはベース型（string）になる', () => {
+  it('VO-derived fields resolve to base type (string)', () => {
     type Input = FormInputValues<typeof loginFormSchema.fields>;
     expectTypeOf<Input['email']>().toEqualTypeOf<string>();
     expectTypeOf<Input['password']>().toEqualTypeOf<string>();
   });
 
-  it('プリミティブフィールドは型を保持する', () => {
+  it('primitive fields retain their type', () => {
     type Input = FormInputValues<typeof mixedFormSchema.fields>;
     expectTypeOf<Input['nickname']>().toEqualTypeOf<string>();
   });
 
-  it('required: false → T | undefined', () => {
+  it('required: false resolves to T | undefined', () => {
     type Input = FormInputValues<typeof mixedFormSchema.fields>;
     expectTypeOf<Input['bio']>().toEqualTypeOf<string | undefined>();
   });
 
-  it('required: true → T', () => {
+  it('required: true resolves to T', () => {
     type Input = FormInputValues<typeof mixedFormSchema.fields>;
     expectTypeOf<Input['email']>().toEqualTypeOf<string>();
   });
 });
 
 describe('FormOutputValues', () => {
-  it('VO 由来のフィールドは branded 型になる', () => {
+  it('VO-derived fields resolve to branded type', () => {
     type Output = FormOutputValues<typeof loginFormSchema.fields>;
     expectTypeOf<Output['email']>().toEqualTypeOf<Email>();
     expectTypeOf<Output['password']>().toEqualTypeOf<Password>();
   });
 
-  it('プリミティブフィールドは入力型と同じ', () => {
+  it('primitive fields match input type', () => {
     type Output = FormOutputValues<typeof mixedFormSchema.fields>;
     expectTypeOf<Output['nickname']>().toEqualTypeOf<string>();
   });
 
-  it('required: false → T | undefined', () => {
+  it('required: false resolves to T | undefined', () => {
     type Output = FormOutputValues<typeof mixedFormSchema.fields>;
     expectTypeOf<Output['bio']>().toEqualTypeOf<string | undefined>();
   });
 
-  it('required: true → T (branded 型)', () => {
+  it('required: true resolves to T (branded type)', () => {
     type Output = FormOutputValues<typeof loginFormSchema.fields>;
     expectTypeOf<Output['email']>().toEqualTypeOf<Email>();
   });

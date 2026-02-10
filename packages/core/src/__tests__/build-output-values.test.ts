@@ -8,21 +8,21 @@ const Price = vo('Price', [
 ]);
 
 describe('buildOutputValues', () => {
-  it('transform なし・VO なしの場合、値をそのまま返す', () => {
+  it('returns value as-is when no transform and no VO', () => {
     const field = createField<string>()({ required: true });
     const result = buildOutputValues({ name: 'hello' }, { name: field });
 
     expect(result).toEqual({ name: 'hello' });
   });
 
-  it('VO がある場合 vo.create を適用する', () => {
+  it('applies vo.create when VO is present', () => {
     const field = createField(Price)({ required: true });
     const result = buildOutputValues({ price: 100 }, { price: field });
 
     expect(result.price).toBe(100);
   });
 
-  it('空値は undefined を返す', () => {
+  it('returns undefined for empty values', () => {
     const field = createField<string>()({ required: true });
 
     expect(buildOutputValues({ name: '' }, { name: field })).toEqual({ name: undefined });
@@ -30,18 +30,18 @@ describe('buildOutputValues', () => {
     expect(buildOutputValues({ name: undefined }, { name: field })).toEqual({ name: undefined });
   });
 
-  it('parse 済みの値をそのまま vo.create に渡す', () => {
+  it('passes pre-parsed value directly to vo.create', () => {
     const field = createField(Price, {
       parse: (v: string) => Number(v.replace(/,/g, '')),
       format: (v: number) => v.toLocaleString(),
     })({ required: true });
 
-    // parse は form state 保存時に適用済み。buildOutputValues は T を受け取る
+    // parse is applied when saving form state. buildOutputValues receives T
     const result = buildOutputValues({ price: 1000 }, { price: field });
     expect(result.price).toBe(1000);
   });
 
-  it('VO なしの場合、値をそのまま返す', () => {
+  it('returns value as-is when no VO', () => {
     const field = createField<number>({
       parse: (v: string) => Number(v),
       format: (v: number) => String(v),
@@ -51,7 +51,7 @@ describe('buildOutputValues', () => {
     expect(result.age).toBe(25);
   });
 
-  it('複数フィールドを処理する', () => {
+  it('processes multiple fields', () => {
     const priceField = createField(Price, {
       parse: (v: string) => Number(v.replace(/,/g, '')),
     })({ required: true });
@@ -67,7 +67,7 @@ describe('buildOutputValues', () => {
     expect(result.name).toBe('hello');
   });
 
-  it('空値の optional フィールドは undefined', () => {
+  it('returns undefined for empty optional field', () => {
     const field = createField<number>({
       parse: (v: string) => Number(v),
     })({ required: false });

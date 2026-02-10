@@ -15,7 +15,8 @@ export function resolveMessage(
       const result = source({ code });
       if (result) return result;
     } else {
-      if (source[code]) return source[code];
+      const msg = source[code];
+      if (msg) return msg;
     }
   }
 

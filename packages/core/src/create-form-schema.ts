@@ -1,6 +1,6 @@
-import type { FieldSchema, FormSchema, FormSchemaConfig, ErrorMessages, FormInputValues, FormErrors } from './types.js';
+import type { FieldSchema, FormSchema, FormSchemaConfig } from './types.js';
 
-export function createFormSchema<TFields extends Record<string, FieldSchema<any, any, boolean>>>(
+export function createFormSchema<TFields extends Record<string, FieldSchema<any, any, boolean, any>>>(
   config: FormSchemaConfig<TFields>,
 ): FormSchema<TFields> {
   return {

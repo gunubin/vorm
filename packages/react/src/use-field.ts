@@ -12,13 +12,13 @@ export type FieldState<TValue> = {
 };
 
 export function useField<
-  TFields extends Record<string, FieldSchema<any, any, boolean>>,
+  TFields extends Record<string, FieldSchema<any, any, boolean, any>>,
   TName extends string & keyof TFields,
 >(
   form: FormState<TFields>,
   name: TName,
-): FieldState<TFields[TName] extends FieldSchema<infer TInput, any, any> ? TInput : never> {
-  type TValue = TFields[TName] extends FieldSchema<infer TInput, any, any> ? TInput : never;
+): FieldState<TFields[TName] extends FieldSchema<infer TInput, any, any, any> ? TInput : never> {
+  type TValue = TFields[TName] extends FieldSchema<infer TInput, any, any, any> ? TInput : never;
 
   const store = form.__store;
 

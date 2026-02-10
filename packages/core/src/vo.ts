@@ -11,10 +11,10 @@ export class VOValidationError extends Error {
   }
 }
 
-export function vo<B extends string, T = string>(
+export function vo<B extends string, T = string, C extends string = string>(
   brand: B,
-  rules: ValidationRule<T>[],
-): VODefinition<T, B> {
+  rules: ValidationRule<T, C>[],
+): VODefinition<T, B, C> {
   return {
     brand,
     rules,

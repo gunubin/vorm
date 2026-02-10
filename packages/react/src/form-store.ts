@@ -5,7 +5,7 @@ import type {
   FieldError,
 } from '@vorm/core';
 
-export type FormStoreState<TFields extends Record<string, FieldSchema<any, any, boolean>>> = {
+export type FormStoreState<TFields extends Record<string, FieldSchema<any, any, boolean, any>>> = {
   values: FormInputValues<TFields>;
   errors: FormErrors;
   isDirty: boolean;
@@ -22,7 +22,7 @@ export type FieldSnapshot = {
 
 type Listener = () => void;
 
-export type FormStore<TFields extends Record<string, FieldSchema<any, any, boolean>>> = {
+export type FormStore<TFields extends Record<string, FieldSchema<any, any, boolean, any>>> = {
   subscribe: (listener: Listener) => () => void;
   getSnapshot: () => FormStoreState<TFields>;
   subscribeField: (name: string, listener: Listener) => () => void;
@@ -38,7 +38,7 @@ export type FormStore<TFields extends Record<string, FieldSchema<any, any, boole
   reset: (values: FormInputValues<TFields>) => void;
 };
 
-export function createFormStore<TFields extends Record<string, FieldSchema<any, any, boolean>>>(
+export function createFormStore<TFields extends Record<string, FieldSchema<any, any, boolean, any>>>(
   initialState: FormStoreState<TFields>,
 ): FormStore<TFields> {
   let state = initialState;

@@ -22,19 +22,19 @@ export type AsyncFieldValidator<TInput> = {
   debounceMs?: number;
 };
 
-export type AsyncValidators<TFields extends Record<string, FieldSchema<any, any, boolean>>> = {
+export type AsyncValidators<TFields extends Record<string, FieldSchema<any, any, boolean, any>>> = {
   [K in string & keyof TFields]?: AsyncFieldValidator<
-    TFields[K] extends FieldSchema<infer TInput, any, any> ? TInput : never
+    TFields[K] extends FieldSchema<infer TInput, any, any, any> ? TInput : never
   >;
 };
 
-type UseFormOptions<TFields extends Record<string, FieldSchema<any, any, boolean>>> = {
+type UseFormOptions<TFields extends Record<string, FieldSchema<any, any, boolean, any>>> = {
   defaultValues: FormInputValues<TFields>;
   mode?: ValidationMode;
   asyncValidators?: AsyncValidators<TFields>;
 };
 
-export type FormState<TFields extends Record<string, FieldSchema<any, any, boolean>>> = {
+export type FormState<TFields extends Record<string, FieldSchema<any, any, boolean, any>>> = {
   values: FormInputValues<TFields>;
   errors: FormErrors;
   isValid: boolean;
@@ -52,7 +52,7 @@ export type FormState<TFields extends Record<string, FieldSchema<any, any, boole
   validateAsync: (name?: string & keyof TFields) => Promise<boolean>;
   field: <TName extends string & keyof TFields>(
     name: TName,
-  ) => FieldState<TFields[TName] extends FieldSchema<infer TInput, any, any> ? TInput : never>;
+  ) => FieldState<TFields[TName] extends FieldSchema<infer TInput, any, any, any> ? TInput : never>;
   schema: FormSchema<TFields>;
   mode: ValidationMode;
   defaultValues: FormInputValues<TFields>;
@@ -60,7 +60,7 @@ export type FormState<TFields extends Record<string, FieldSchema<any, any, boole
   __store: FormStore<TFields>;
 };
 
-export function useForm<TFields extends Record<string, FieldSchema<any, any, boolean>>>(
+export function useForm<TFields extends Record<string, FieldSchema<any, any, boolean, any>>>(
   schema: FormSchema<TFields>,
   options: UseFormOptions<TFields>,
 ): FormState<TFields> {
@@ -363,7 +363,7 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
   }, []);
 
   const field = <TName extends string & keyof TFields>(name: TName) => {
-    type TValue = TFields[TName] extends FieldSchema<infer TInput, any, any> ? TInput : never;
+    type TValue = TFields[TName] extends FieldSchema<infer TInput, any, any, any> ? TInput : never;
     const value = (state.values as Record<string, unknown>)[name as string] as TValue;
     const error = state.errors[name as string] ?? null;
     const fieldIsDirty = value !== (defaultValuesRef.current as Record<string, unknown>)[name as string];

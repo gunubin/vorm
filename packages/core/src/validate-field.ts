@@ -3,7 +3,7 @@ import { resolveMessage } from './resolve-message.js';
 
 export function validateField<TInput>(
   value: TInput | undefined | null,
-  fieldSchema: FieldSchema<TInput, any, boolean>,
+  fieldSchema: FieldSchema<TInput, any, boolean, any>,
   formMessages?: ErrorMessages,
 ): FieldError | null {
   if (fieldSchema.required) {

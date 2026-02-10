@@ -1,7 +1,7 @@
 import type { FormSchema, FieldSchema, FormErrors, FormInputValues, ErrorMessages } from './types.js';
 import { validateField } from './validate-field.js';
 
-export function validateForm<TFields extends Record<string, FieldSchema<any, any, boolean>>>(
+export function validateForm<TFields extends Record<string, FieldSchema<any, any, boolean, any>>>(
   values: FormInputValues<TFields>,
   schema: FormSchema<TFields>,
 ): FormErrors {
@@ -10,7 +10,7 @@ export function validateForm<TFields extends Record<string, FieldSchema<any, any
   for (const [name, fieldSchema] of Object.entries(schema.fields)) {
     const value = (values as Record<string, unknown>)[name];
     const formMessages = schema.messages?.[name];
-    const error = validateField(value, fieldSchema as FieldSchema<any, any, boolean>, formMessages);
+    const error = validateField(value, fieldSchema as FieldSchema<any, any, boolean, any>, formMessages);
     if (error) {
       errors[name] = error;
     }

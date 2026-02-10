@@ -1,5 +1,9 @@
 # vorm
 
+[![CI](https://github.com/gunubin/vorm/actions/workflows/ci.yml/badge.svg)](https://github.com/gunubin/vorm/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@gunubin/vorm-core)](https://www.npmjs.com/package/@gunubin/vorm-core)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **VO-first form library for React.**
 
 vorm brings Value Object (branded type) safety to form handling. Define your domain types once, and get type-safe input, validation, and output — all with zero runtime overhead.

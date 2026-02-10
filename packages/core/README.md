@@ -1,5 +1,7 @@
 # @gunubin/vorm-core
 
+[![npm](https://img.shields.io/npm/v/@gunubin/vorm-core)](https://www.npmjs.com/package/@gunubin/vorm-core)
+
 VO-first form validation core — branded types, field schemas, and validation logic.
 
 Part of the [vorm](https://github.com/gunubin/vorm) monorepo.

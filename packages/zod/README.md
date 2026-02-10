@@ -1,5 +1,7 @@
 # @gunubin/vorm-zod
 
+[![npm](https://img.shields.io/npm/v/@gunubin/vorm-zod)](https://www.npmjs.com/package/@gunubin/vorm-zod)
+
 Zod schema adapter for vorm — convert Zod checks to validation rules.
 
 Part of the [vorm](https://github.com/gunubin/vorm) monorepo.

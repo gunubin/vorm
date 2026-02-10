@@ -1,5 +1,7 @@
 # @gunubin/vorm-rhf
 
+[![npm](https://img.shields.io/npm/v/@gunubin/vorm-rhf)](https://www.npmjs.com/package/@gunubin/vorm-rhf)
+
 React Hook Form resolver adapter for vorm — branded type output with zero API wrapping.
 
 Part of the [vorm](https://github.com/gunubin/vorm) monorepo.

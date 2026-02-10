@@ -1,5 +1,7 @@
 # @gunubin/vorm-react
 
+[![npm](https://img.shields.io/npm/v/@gunubin/vorm-react)](https://www.npmjs.com/package/@gunubin/vorm-react)
+
 React hooks for vorm — `useForm` and `useField` with per-field subscriptions via `useSyncExternalStore`.
 
 Part of the [vorm](https://github.com/gunubin/vorm) monorepo.

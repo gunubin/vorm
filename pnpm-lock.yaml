@@ -23,16 +23,16 @@ importers:
 
   examples/vite-app:
     dependencies:
-      '@vorm/core':
+      '@gunubin/vorm-core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@vorm/react':
+      '@gunubin/vorm-react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@vorm/rhf':
+      '@gunubin/vorm-rhf':
         specifier: workspace:*
         version: link:../../packages/rhf
-      '@vorm/zod':
+      '@gunubin/vorm-zod':
         specifier: workspace:*
         version: link:../../packages/zod
       react:
@@ -75,7 +75,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@vorm/core':
+      '@gunubin/vorm-core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -109,7 +109,7 @@ importers:
 
   packages/rhf:
     dependencies:
-      '@vorm/core':
+      '@gunubin/vorm-core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -146,7 +146,7 @@ importers:
 
   packages/zod:
     dependencies:
-      '@vorm/core':
+      '@gunubin/vorm-core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

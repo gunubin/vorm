@@ -1,4 +1,4 @@
-# @vorm/core
+# @gunubin/vorm-core
 
 VO-first form validation core — branded types, field schemas, and validation logic.
 
@@ -7,7 +7,7 @@ Part of the [vorm](https://github.com/gunubin/vorm) monorepo.
 ## Install
 
 ```bash
-npm install @vorm/core
+npm install @gunubin/vorm-core
 ```
 
 ## Quick Start
@@ -15,7 +15,7 @@ npm install @vorm/core
 ### Define Value Objects
 
 ```ts
-import { vo } from '@vorm/core';
+import { vo } from '@gunubin/vorm-core';
 
 const Email = vo('Email', [
   { code: 'INVALID_FORMAT', validate: (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
@@ -27,7 +27,7 @@ Email.create('user@example.com'); // Brand<string, 'Email'>
 ### Create Fields and Form Schema
 
 ```ts
-import { createField, createFormSchema } from '@vorm/core';
+import { createField, createFormSchema } from '@gunubin/vorm-core';
 
 const emailField = createField(Email);
 
@@ -44,7 +44,7 @@ const schema = createFormSchema({
 ### Reusable Rules with `createRule`
 
 ```ts
-import { createRule } from '@vorm/core';
+import { createRule } from '@gunubin/vorm-core';
 
 const minLength = createRule('TOO_SHORT', (v: string, min: number) => v.length >= min);
 const maxLength = createRule('TOO_LONG', (v: string, max: number) => v.length <= max);
@@ -77,7 +77,7 @@ const priceField = createField<number>({
 ### Types
 
 ```ts
-import type { Brand, Infer, ErrorMessageMap } from '@vorm/core';
+import type { Brand, Infer, ErrorMessageMap } from '@gunubin/vorm-core';
 ```
 
 For full documentation, see the [vorm README](https://github.com/gunubin/vorm#readme).

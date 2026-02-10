@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { vo, createField, createFormSchema } from '@vorm/core';
+import { vo, createField, createFormSchema } from '@gunubin/vorm-core';
 import { useForm } from '../use-form.js';
 import { useField } from '../use-field.js';
 

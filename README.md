@@ -13,8 +13,8 @@ vorm brings Value Object (branded type) safety to form handling. Define your dom
 - **Validation modes** — `onChange`, `onBlur`, `onTouched`, `onSubmit`
 - **Parse / Format** — Transform between raw input strings and typed values with `parse` and `format`
 - **Type-safe messages** — `ErrorMessageMap<C>` constrains message keys to declared validation codes
-- **Zod adapter** — Convert Zod schemas to vorm validation rules with `@vorm/zod`
-- **RHF adapter** — Use vorm schemas as a React Hook Form resolver with `@vorm/rhf`
+- **Zod adapter** — Convert Zod schemas to vorm validation rules with `@gunubin/vorm-zod`
+- **RHF adapter** — Use vorm schemas as a React Hook Form resolver with `@gunubin/vorm-rhf`
 - **Zero dependencies** — Only peer deps are `react` and optionally `zod` / `react-hook-form`
 - **React 18+ / React 19** — Uses native `useSyncExternalStore`, no shims
 
@@ -22,21 +22,21 @@ vorm brings Value Object (branded type) safety to form handling. Define your dom
 
 | Package | Description |
 |---------|-------------|
-| `@vorm/core` | VO definitions, field schemas, validation logic |
-| `@vorm/react` | `useForm`, `useField` hooks |
-| `@vorm/zod` | `fromZod()` — convert Zod schemas to validation rules |
-| `@vorm/rhf` | `createVormResolver()`, `useVorm()` — React Hook Form adapter |
+| `@gunubin/vorm-core` | VO definitions, field schemas, validation logic |
+| `@gunubin/vorm-react` | `useForm`, `useField` hooks |
+| `@gunubin/vorm-zod` | `fromZod()` — convert Zod schemas to validation rules |
+| `@gunubin/vorm-rhf` | `createVormResolver()`, `useVorm()` — React Hook Form adapter |
 
 ## Quick Start
 
 ```bash
-npm install @vorm/core @vorm/react
+npm install @gunubin/vorm-core @gunubin/vorm-react
 ```
 
 ### 1. Define Value Objects
 
 ```ts
-import { vo } from '@vorm/core';
+import { vo } from '@gunubin/vorm-core';
 
 const Email = vo('Email', [
   { code: 'INVALID_FORMAT', validate: (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
@@ -52,7 +52,7 @@ const Password = vo('Password', [
 ### 2. Create a Form Schema
 
 ```ts
-import { createField, createFormSchema } from '@vorm/core';
+import { createField, createFormSchema } from '@gunubin/vorm-core';
 
 const emailField = createField(Email);
 const passwordField = createField(Password);
@@ -74,7 +74,7 @@ const loginSchema = createFormSchema({
 ### 3. Use in React
 
 ```tsx
-import { useForm, useField } from '@vorm/react';
+import { useForm, useField } from '@gunubin/vorm-react';
 
 function LoginForm() {
   const form = useForm(loginSchema, {
@@ -170,13 +170,13 @@ const form = useForm(loginSchema, {
 ## Zod Adapter
 
 ```bash
-npm install @vorm/zod zod
+npm install @gunubin/vorm-zod zod
 ```
 
 ```ts
 import { z } from 'zod';
-import { fromZod } from '@vorm/zod';
-import { vo } from '@vorm/core';
+import { fromZod } from '@gunubin/vorm-zod';
+import { vo } from '@gunubin/vorm-core';
 
 const emailSchema = z.string().email('INVALID_EMAIL').min(1, 'REQUIRED');
 const Email = vo('Email', fromZod(emailSchema));
@@ -187,7 +187,7 @@ const Email = vo('Email', fromZod(emailSchema));
 ## React Hook Form Adapter
 
 ```bash
-npm install @vorm/rhf react-hook-form
+npm install @gunubin/vorm-rhf react-hook-form
 ```
 
 ### useVorm
@@ -195,7 +195,7 @@ npm install @vorm/rhf react-hook-form
 `useVorm` is a thin wrapper around RHF's `useForm` that automatically wires up a vorm resolver. All RHF APIs work as-is.
 
 ```tsx
-import { useVorm } from '@vorm/rhf';
+import { useVorm } from '@gunubin/vorm-rhf';
 
 function LoginForm() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useVorm(schema, {
@@ -227,7 +227,7 @@ If you need to use the resolver directly with RHF's `useForm`:
 
 ```ts
 import { useForm } from 'react-hook-form';
-import { createVormResolver } from '@vorm/rhf';
+import { createVormResolver } from '@gunubin/vorm-rhf';
 
 const { register, handleSubmit } = useForm({
   resolver: createVormResolver(schema),
@@ -237,7 +237,7 @@ const { register, handleSubmit } = useForm({
 
 ## API Reference
 
-### `@vorm/core`
+### `@gunubin/vorm-core`
 
 #### `vo(brand, rules)`
 
@@ -290,7 +290,7 @@ const field = ageField({ required: true });
 Create reusable, parameterized validation rules.
 
 ```ts
-import { createRule } from '@vorm/core';
+import { createRule } from '@gunubin/vorm-core';
 
 const minLength = createRule('TOO_SHORT', (v: string, min: number) => v.length >= min);
 const maxLength = createRule('TOO_LONG', (v: string, max: number) => v.length <= max);
@@ -340,7 +340,7 @@ Validate all fields. Returns `FormErrors` (a `Record<string, FieldError>`).
 Error thrown by `vo().create()` when validation fails.
 
 ```ts
-import { VOValidationError } from '@vorm/core';
+import { VOValidationError } from '@gunubin/vorm-core';
 
 try {
   Email.create('bad');
@@ -356,7 +356,7 @@ try {
 #### Utility Types
 
 ```ts
-import type { Brand, Infer, ErrorMessageMap } from '@vorm/core';
+import type { Brand, Infer, ErrorMessageMap } from '@gunubin/vorm-core';
 
 type EmailType = Brand<string, 'Email'>;    // string & { readonly __brand: 'Email' }
 type Inferred = Infer<typeof Email>;         // Brand<string, 'Email'>
@@ -366,7 +366,7 @@ type LoginMessages = ErrorMessageMap<'INVALID_FORMAT' | 'REQUIRED'>;
 // → { INVALID_FORMAT?: string; REQUIRED?: string }
 ```
 
-### `@vorm/react`
+### `@gunubin/vorm-react`
 
 #### `useForm(schema, options)`
 
@@ -411,7 +411,7 @@ const email = useField(form, 'email');
 // email.value, email.formattedValue, email.onChange, email.onBlur, email.error, email.isDirty, email.isTouched
 ```
 
-### `@vorm/zod`
+### `@gunubin/vorm-zod`
 
 #### `fromZod(zodSchema)`
 
@@ -419,14 +419,14 @@ Convert a Zod schema to `ValidationRule[]`.
 
 Supported checks: `min`, `max`, `email`, `regex`. Unsupported checks pass through as no-op rules.
 
-### `@vorm/rhf`
+### `@gunubin/vorm-rhf`
 
 #### `createVormResolver(schema)`
 
 Create a React Hook Form `Resolver` from a `FormSchema`. Applies `parse` transforms, runs vorm validation, and returns branded output values.
 
 ```ts
-import { createVormResolver } from '@vorm/rhf';
+import { createVormResolver } from '@gunubin/vorm-rhf';
 
 const resolver = createVormResolver(schema);
 // Use with RHF's useForm({ resolver })
@@ -437,7 +437,7 @@ const resolver = createVormResolver(schema);
 Thin wrapper around RHF's `useForm` that auto-configures the resolver. Accepts all RHF `UseFormProps` except `resolver`.
 
 ```ts
-import { useVorm } from '@vorm/rhf';
+import { useVorm } from '@gunubin/vorm-rhf';
 
 const { register, handleSubmit, formState } = useVorm(schema, {
   defaultValues: { email: '', password: '' },
@@ -447,7 +447,7 @@ const { register, handleSubmit, formState } = useVorm(schema, {
 ## Architecture
 
 ```
-@vorm/core          @vorm/zod         @vorm/rhf
+@gunubin/vorm-core          @gunubin/vorm-zod         @gunubin/vorm-rhf
   vo()               fromZod()         createVormResolver()
   createField()         │              useVorm()
   createFormSchema()    │                 │
@@ -455,7 +455,7 @@ const { register, handleSubmit, formState } = useVorm(schema, {
   validateForm()  ←───────────────────────┘
        │
        ▼
-@vorm/react
+@gunubin/vorm-react
   useForm()  ──→  FormStore (useSyncExternalStore)
   useField() ──→  subscribeField() (per-field subscription)
 ```

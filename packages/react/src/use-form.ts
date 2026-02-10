@@ -6,9 +6,9 @@ import type {
   FormOutputValues,
   FormErrors,
   FieldError,
-} from '@vorm/core';
+} from '@gunubin/vorm-core';
 import type { FieldState } from './use-field.js';
-import { validateField, validateForm, buildOutputValues } from '@vorm/core';
+import { validateField, validateForm, buildOutputValues } from '@gunubin/vorm-core';
 import { createFormStore } from './form-store.js';
 import type { FormStore } from './form-store.js';
 

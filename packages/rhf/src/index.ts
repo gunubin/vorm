@@ -9,4 +9,4 @@ export type {
   Brand,
   Infer,
   VODefinition,
-} from '@vorm/core';
+} from '@gunubin/vorm-core';

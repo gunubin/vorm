@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { vo, createField, createFormSchema } from '@vorm/core';
-import type { Infer } from '@vorm/core';
-import { useForm } from '@vorm/react';
-import { fromZod } from '@vorm/zod';
+import { vo, createField, createFormSchema } from '@gunubin/vorm-core';
+import type { Infer } from '@gunubin/vorm-core';
+import { useForm } from '@gunubin/vorm-react';
+import { fromZod } from '@gunubin/vorm-zod';
 
 const emailSchema = z.string().email();
 const passwordSchema = z.string().min(8);

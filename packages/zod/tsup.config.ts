@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: true,
   outDir: 'dist',
-  external: ['zod', '@vorm/core'],
+  external: ['zod', '@gunubin/vorm-core'],
 });

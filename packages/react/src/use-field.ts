@@ -1,5 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react';
-import type { FieldSchema, FieldError } from '@vorm/core';
+import type { FieldSchema, FieldError } from '@gunubin/vorm-core';
 import type { FormState } from './use-form.js';
 
 export type FieldState<TValue> = {

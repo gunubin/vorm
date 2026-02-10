@@ -1,5 +1,5 @@
 {
-  "name": "@vorm/zod",
+  "name": "@gunubin/vorm-zod",
   "version": "0.1.0",
   "description": "Zod schema adapter for vorm — convert Zod checks to validation rules",
   "keywords": ["form", "zod", "validation", "adapter", "typescript"],
@@ -41,7 +41,7 @@
     "zod": "^3.25.0"
   },
   "dependencies": {
-    "@vorm/core": "workspace:*"
+    "@gunubin/vorm-core": "workspace:*"
   },
   "devDependencies": {
     "zod": "^3.25.0",

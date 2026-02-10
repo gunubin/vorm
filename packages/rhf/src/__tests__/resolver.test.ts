@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { vo, createField, createFormSchema } from '@vorm/core';
+import { vo, createField, createFormSchema } from '@gunubin/vorm-core';
 import { createVormResolver } from '../resolver.js';
 
 const EmailVO = vo('Email', [

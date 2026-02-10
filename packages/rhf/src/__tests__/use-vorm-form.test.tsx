@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { vo, createField, createFormSchema } from '@vorm/core';
+import { vo, createField, createFormSchema } from '@gunubin/vorm-core';
 import { useVorm } from '../use-vorm-form.js';
 
 const EmailVO = vo('Email', [

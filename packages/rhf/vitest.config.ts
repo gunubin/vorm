@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   resolve: {
     alias: {
-      '@vorm/core': resolve(__dirname, '../core/src/index.ts'),
+      '@gunubin/vorm-core': resolve(__dirname, '../core/src/index.ts'),
     },
   },
   test: {

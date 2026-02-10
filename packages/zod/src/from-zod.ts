@@ -1,4 +1,4 @@
-import type { ValidationRule } from '@vorm/core';
+import type { ValidationRule } from '@gunubin/vorm-core';
 import type { z } from 'zod';
 
 type ZodCheck = {

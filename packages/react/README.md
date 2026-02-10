@@ -1,4 +1,4 @@
-# @vorm/react
+# @gunubin/vorm-react
 
 React hooks for vorm — `useForm` and `useField` with per-field subscriptions via `useSyncExternalStore`.
 
@@ -7,13 +7,13 @@ Part of the [vorm](https://github.com/gunubin/vorm) monorepo.
 ## Install
 
 ```bash
-npm install @vorm/core @vorm/react
+npm install @gunubin/vorm-core @gunubin/vorm-react
 ```
 
 ## Quick Start
 
 ```tsx
-import { useForm, useField } from '@vorm/react';
+import { useForm, useField } from '@gunubin/vorm-react';
 
 function LoginForm() {
   const form = useForm(loginSchema, {

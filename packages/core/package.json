@@ -1,5 +1,5 @@
 {
-  "name": "@vorm/core",
+  "name": "@gunubin/vorm-core",
   "version": "0.1.0",
   "description": "VO-first form validation core — branded types, field schemas, and validation logic",
   "keywords": ["form", "validation", "value-object", "branded-types", "typescript"],

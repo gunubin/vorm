@@ -9,10 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@vorm/core": "workspace:*",
-    "@vorm/react": "workspace:*",
-    "@vorm/rhf": "workspace:*",
-    "@vorm/zod": "workspace:*",
+    "@gunubin/vorm-core": "workspace:*",
+    "@gunubin/vorm-react": "workspace:*",
+    "@gunubin/vorm-rhf": "workspace:*",
+    "@gunubin/vorm-zod": "workspace:*",
     "react-hook-form": "^7.54.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

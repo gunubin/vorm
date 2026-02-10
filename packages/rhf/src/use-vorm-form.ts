@@ -1,5 +1,5 @@
 import { useForm, type UseFormProps, type UseFormReturn, type FieldValues } from 'react-hook-form';
-import type { FormSchema, FieldSchema, FormInputValues, FormOutputValues } from '@vorm/core';
+import type { FormSchema, FieldSchema, FormInputValues, FormOutputValues } from '@gunubin/vorm-core';
 import { createVormResolver } from './resolver.js';
 
 type AnyFields = Record<string, FieldSchema<any, any, boolean, any>>;

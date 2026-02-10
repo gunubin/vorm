@@ -6,7 +6,7 @@ import {
   type FieldSchema,
   type FormInputValues,
   type FormOutputValues,
-} from '@vorm/core';
+} from '@gunubin/vorm-core';
 
 type AnyFields = Record<string, FieldSchema<any, any, boolean, any>>;
 
@@ -26,10 +26,10 @@ function applyParse(
 }
 
 /**
- * Create a React Hook Form-compatible Resolver from a @vorm/core FormSchema.
+ * Create a React Hook Form-compatible Resolver from a @gunubin/vorm-core FormSchema.
  *
  * - RHF holds string values, so parse is applied in the resolver
- * - Validation is delegated to @vorm/core's validateForm
+ * - Validation is delegated to @gunubin/vorm-core's validateForm
  * - On success, values are converted to Branded Types via VO's create()
  * - Can be passed directly to RHF's useForm
  */

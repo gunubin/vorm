@@ -1,5 +1,5 @@
 {
-  "name": "@vorm/react",
+  "name": "@gunubin/vorm-react",
   "version": "0.1.0",
   "description": "VO-first React form hooks with per-field subscriptions via useSyncExternalStore",
   "keywords": ["form", "react", "hooks", "validation", "branded-types", "typescript"],
@@ -41,7 +41,7 @@
     "react": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "@vorm/core": "workspace:*"
+    "@gunubin/vorm-core": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.0",

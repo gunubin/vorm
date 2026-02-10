@@ -1,6 +1,6 @@
-import { vo, createRule, createField, createFormSchema } from '@vorm/core';
-import type { Infer } from '@vorm/core';
-import { useVorm } from '@vorm/rhf';
+import { vo, createRule, createField, createFormSchema } from '@gunubin/vorm-core';
+import type { Infer } from '@gunubin/vorm-core';
+import { useVorm } from '@gunubin/vorm-rhf';
 
 const minLength = createRule(
   'minLength',
@@ -49,7 +49,7 @@ export function RHFIntegration() {
 
   return (
     <div>
-      <h2>RHF Integration (@vorm/rhf)</h2>
+      <h2>RHF Integration (@gunubin/vorm-rhf)</h2>
       <p className="description">
         Use React Hook Form API as-is while receiving Branded Types on submit.
         register, formState, watch, etc. are all standard RHF. Performance is identical to RHF (uncontrolled / ref-based).
@@ -84,12 +84,12 @@ export function RHFIntegration() {
       </form>
 
       <div className="state-display">
-        <strong>Comparison with @vorm/react:</strong>{'\n\n'}
-        {'@vorm/react: useForm → form.field("email") → value, onChange, onBlur\n'}
-        {'@vorm/rhf:   useVorm → register("email") → RHF standard props\n\n'}
+        <strong>Comparison with @gunubin/vorm-react:</strong>{'\n\n'}
+        {'@gunubin/vorm-react: useForm → form.field("email") → value, onChange, onBlur\n'}
+        {'@gunubin/vorm-rhf:   useVorm → register("email") → RHF standard props\n\n'}
         <strong>Key difference:</strong>{'\n'}
-        {'@vorm/react manages its own state (controlled, useSyncExternalStore)\n'}
-        {'@vorm/rhf delegates to RHF (uncontrolled, ref-based)\n\n'}
+        {'@gunubin/vorm-react manages its own state (controlled, useSyncExternalStore)\n'}
+        {'@gunubin/vorm-rhf delegates to RHF (uncontrolled, ref-based)\n\n'}
         {'Both provide Branded Types in handleSubmit callback.'}
       </div>
     </div>

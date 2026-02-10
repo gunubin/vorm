@@ -26,6 +26,7 @@ jobs:
       - run: pnpm install
       - run: pnpm build
       - run: pnpm test
-      - run: pnpm publish -r --no-git-checks
+      - run: echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: pnpm publish -r --no-git-checks

@@ -29,7 +29,7 @@ const loginSchema = createFormSchema({
 describe('createVormResolver', () => {
   const resolver = createVormResolver(loginSchema);
 
-  it('returns required error in RHF FieldErrors format', async () => {
+  it('RHF FieldErrors 形式で required エラーを返す', async () => {
     const result = await resolver(
       { email: '', password: '' },
       undefined,
@@ -47,7 +47,7 @@ describe('createVormResolver', () => {
     expect(result.values).toEqual({});
   });
 
-  it('returns validation rule error', async () => {
+  it('バリデーションルールエラーを返す', async () => {
     const result = await resolver(
       { email: 'invalid', password: 'short' },
       undefined,
@@ -64,7 +64,7 @@ describe('createVormResolver', () => {
     });
   });
 
-  it('returns VO Branded Type values when validation passes', async () => {
+  it('バリデーション通過時に VO Branded Type の値を返す', async () => {
     const result = await resolver(
       { email: 'test@example.com', password: 'Password1' },
       undefined,
@@ -77,17 +77,15 @@ describe('createVormResolver', () => {
       password: 'Password1',
     });
 
-    // Confirms values passed through create() as Branded Type
-    // (runtime values are the same, but typed as Brand<string, 'Email'> at type level)
     expect(result.values.email).toBe('test@example.com');
     expect(result.values.password).toBe('Password1');
   });
 
-  it('returns undefined for empty optional field', async () => {
+  it('空の optional フィールドは undefined を返す', async () => {
     const schema = createFormSchema({
       fields: {
         email: emailField({ required: true, messages: { REQUIRED: 'Required' } }),
-        nickname: createField<string>({ required: false }),
+        nickname: createField<string>()({ required: false }),
       },
     });
 
@@ -103,10 +101,10 @@ describe('createVormResolver', () => {
     expect(result.values.nickname).toBeUndefined();
   });
 
-  it('returns value as-is for field without VO', async () => {
+  it('VO なしのフィールドは値をそのまま返す', async () => {
     const schema = createFormSchema({
       fields: {
-        name: createField<string>({ required: true, messages: { REQUIRED: 'Name required' } }),
+        name: createField<string>({ messages: { REQUIRED: 'Name required' } })({ required: true }),
       },
     });
 
@@ -121,11 +119,49 @@ describe('createVormResolver', () => {
     expect(result.values.name).toBe('John');
   });
 
-  describe('cross-field resolver', () => {
+  describe('parse 適用', () => {
+    it('string → parse → validate → vo.create のパイプライン', async () => {
+      const PriceVO = vo('Price', [
+        { code: 'POSITIVE', validate: (v: number) => v > 0 },
+      ]);
+
+      const schema = createFormSchema({
+        fields: {
+          price: createField(PriceVO, {
+            parse: (v: string) => Number(v.replace(/,/g, '')),
+          })({ required: true, messages: { REQUIRED: 'Required', POSITIVE: 'Must be positive' } }),
+        },
+      });
+
+      const r = createVormResolver(schema);
+
+      // 有効な値
+      const result = await r(
+        { price: '1,000' } as any,
+        undefined,
+        { criteriaMode: 'firstError', fields: {}, names: [], shouldUseNativeValidation: false },
+      );
+      expect(result.errors).toEqual({});
+      expect(result.values.price).toBe(1000);
+
+      // バリデーション失敗
+      const result2 = await r(
+        { price: '-1' } as any,
+        undefined,
+        { criteriaMode: 'firstError', fields: {}, names: [], shouldUseNativeValidation: false },
+      );
+      expect(result2.errors.price).toEqual({
+        type: 'POSITIVE',
+        message: 'Must be positive',
+      });
+    });
+  });
+
+  describe('クロスフィールド resolver', () => {
     const signupSchema = createFormSchema({
       fields: {
         password: passwordField({ required: true, messages: { REQUIRED: 'Required' } }),
-        confirmPassword: createField<string>({ required: true, messages: { REQUIRED: 'Required' } }),
+        confirmPassword: createField<string>({ messages: { REQUIRED: 'Required' } })({ required: true }),
       },
       resolver: (values) => {
         if (values.password !== values.confirmPassword) {
@@ -137,7 +173,7 @@ describe('createVormResolver', () => {
       },
     });
 
-    it('cross-field validation error', async () => {
+    it('クロスフィールドバリデーションエラー', async () => {
       const r = createVormResolver(signupSchema);
       const result = await r(
         { password: 'Password1', confirmPassword: 'Different1' },
@@ -151,7 +187,7 @@ describe('createVormResolver', () => {
       });
     });
 
-    it('cross-field validation passes', async () => {
+    it('クロスフィールドバリデーション通過', async () => {
       const r = createVormResolver(signupSchema);
       const result = await r(
         { password: 'Password1', confirmPassword: 'Password1' },

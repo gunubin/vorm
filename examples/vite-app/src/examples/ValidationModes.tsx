@@ -10,11 +10,13 @@ const minLength = createRule<string, number>(
 const Name = vo('Name', [minLength(2)]);
 type Name = Infer<typeof Name>;
 
-const nameField = createField(Name);
+const nameField = createField(Name, {
+  messages: { minLength: '2文字以上で入力してください' },
+});
 
 const schema = createFormSchema({
   fields: {
-    name: nameField({ required: true, messages: { REQUIRED: '必須です', minLength: '2文字以上で入力してください' } }),
+    name: nameField({ required: true, messages: { REQUIRED: '必須です' } }),
   },
 });
 

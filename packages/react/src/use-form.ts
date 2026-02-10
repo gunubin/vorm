@@ -8,7 +8,7 @@ import type {
   FieldError,
 } from '@vorm/core';
 import type { FieldState } from './use-field.js';
-import { validateField, validateForm } from '@vorm/core';
+import { validateField, validateForm, buildOutputValues } from '@vorm/core';
 import { createFormStore } from './form-store.js';
 import type { FormStore } from './form-store.js';
 
@@ -323,7 +323,11 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
 
         store.setIsSubmitting(true);
         try {
-          await handler(currentValues as unknown as FormOutputValues<TFields>);
+          const outputValues = buildOutputValues(
+            currentValues as Record<string, unknown>,
+            schema.fields,
+          );
+          await handler(outputValues as FormOutputValues<TFields>);
         } finally {
           store.setIsSubmitting(false);
         }
@@ -363,17 +367,27 @@ export function useForm<TFields extends Record<string, FieldSchema<any, any, boo
   }, []);
 
   const field = <TName extends string & keyof TFields>(name: TName) => {
-    type TValue = TFields[TName] extends FieldSchema<infer TInput, any, any, any> ? TInput : never;
+    type TValue = TFields[TName] extends FieldSchema<infer T, any, any, any> ? T : never;
     const value = (state.values as Record<string, unknown>)[name as string] as TValue;
     const error = state.errors[name as string] ?? null;
     const fieldIsDirty = value !== (defaultValuesRef.current as Record<string, unknown>)[name as string];
     const isTouched = state.touchedFields[name as string] ?? false;
+
+    const fieldSchema = schema.fields[name] as FieldSchema<TValue, any, boolean, any>;
+    const formatFn = fieldSchema?.format;
+    const parseFn = fieldSchema?.parse;
+    const formattedValue = formatFn ? formatFn(value) : String(value ?? '');
+
     return {
       value,
+      formattedValue,
       error,
       isDirty: fieldIsDirty,
       isTouched,
-      onChange: (newValue: TValue) => { setFieldValue(name as string, newValue); },
+      onChange: (raw: string) => {
+        const parsed = parseFn ? parseFn(raw) : raw;
+        setFieldValue(name as string, parsed);
+      },
       onBlur: () => { setFieldTouched(name as string); },
     };
   };

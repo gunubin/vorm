@@ -24,6 +24,7 @@
   "files": ["dist"],
   "scripts": {
     "build": "tsup",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublishOnly": "pnpm run build"

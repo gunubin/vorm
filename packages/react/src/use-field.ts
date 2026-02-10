@@ -4,7 +4,8 @@ import type { FormState } from './use-form.js';
 
 export type FieldState<TValue> = {
   value: TValue;
-  onChange: (value: TValue) => void;
+  formattedValue: string;
+  onChange: (raw: string) => void;
   onBlur: () => void;
   error: FieldError | null;
   isDirty: boolean;
@@ -17,8 +18,8 @@ export function useField<
 >(
   form: FormState<TFields>,
   name: TName,
-): FieldState<TFields[TName] extends FieldSchema<infer TInput, any, any, any> ? TInput : never> {
-  type TValue = TFields[TName] extends FieldSchema<infer TInput, any, any, any> ? TInput : never;
+): FieldState<TFields[TName] extends FieldSchema<infer T, any, any, any> ? T : never> {
+  type TValue = TFields[TName] extends FieldSchema<infer T, any, any, any> ? T : never;
 
   const store = form.__store;
 
@@ -38,11 +39,18 @@ export function useField<
   const isTouched = snap.isTouched;
   const isDirty = value !== (form.defaultValues as Record<string, unknown>)[name as string];
 
+  const fieldSchema = form.schema.fields[name] as FieldSchema<TValue, any, boolean, any>;
+  const formatFn = fieldSchema?.format;
+  const parseFn = fieldSchema?.parse;
+
+  const formattedValue = formatFn ? formatFn(value) : String(value ?? '');
+
   const onChange = useCallback(
-    (newValue: TValue) => {
-      form.setFieldValue(name as string, newValue);
+    (raw: string) => {
+      const parsed = parseFn ? parseFn(raw) : raw;
+      form.setFieldValue(name as string, parsed);
     },
-    [form.setFieldValue, name],
+    [form.setFieldValue, name, parseFn],
   );
 
   const onBlur = useCallback(() => {
@@ -51,6 +59,7 @@ export function useField<
 
   return {
     value,
+    formattedValue,
     onChange,
     onBlur,
     error,

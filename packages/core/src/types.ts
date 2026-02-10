@@ -31,11 +31,13 @@ export type VOLike<TInput, TOutput, TCodes extends string = string> = {
   create: (input: TInput) => TOutput;
 };
 
-export type FieldSchema<TInput, TOutput, TRequired extends boolean, TCodes extends string = string> = {
-  vo: VOLike<TInput, TOutput, TCodes> | null;
+export type FieldSchema<T, TOutput, TRequired extends boolean, TCodes extends string = string> = {
+  vo: VOLike<T, TOutput, TCodes> | null;
   required: TRequired;
   messages: ErrorMessages<TCodes | (TRequired extends true ? 'REQUIRED' : never)>;
-  rules: ValidationRule<TInput, TCodes>[];
+  rules: ValidationRule<T, TCodes>[];
+  parse?: (raw: string) => T;
+  format?: (value: T) => string;
 };
 
 export type FieldError = {

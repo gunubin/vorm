@@ -24,41 +24,41 @@ const loginSchema = createFormSchema({
   },
 });
 
-describe('useForm type tests', () => {
-  it('values type is FormInputValues (plain types, not branded)', () => {
+describe('useForm 型テスト', () => {
+  it('values の型は FormInputValues（plain types、branded ではない）', () => {
     type Fields = typeof loginSchema.fields;
     type Input = FormInputValues<Fields>;
     expectTypeOf<Input>().toEqualTypeOf<{ email: string; password: string }>();
   });
 
-  it('handleSubmit handler receives FormOutputValues (branded types)', () => {
+  it('handleSubmit ハンドラは FormOutputValues（branded types）を受け取る', () => {
     type Fields = typeof loginSchema.fields;
     type Output = FormOutputValues<Fields>;
     expectTypeOf<Output>().toEqualTypeOf<{ email: Email; password: Password }>();
   });
 
-  it('defaultValues matches FormInputValues', () => {
+  it('defaultValues は FormInputValues と一致', () => {
     type Fields = typeof loginSchema.fields;
     type Expected = FormInputValues<Fields>;
     expectTypeOf<Expected>().toEqualTypeOf<{ email: string; password: string }>();
   });
 
-  it('field() name parameter is constrained to field names', () => {
+  it('field() の name パラメータはフィールド名に制約される', () => {
     type Fields = typeof loginSchema.fields;
     type Form = FormState<Fields>;
     type FieldFn = Form['field'];
     expectTypeOf<Parameters<FieldFn>[0]>().toEqualTypeOf<'email' | 'password'>();
   });
 
-  describe('input vs validated type separation', () => {
-    it('input values are plain string, not branded', () => {
+  describe('入力型 vs 検証済み型の分離', () => {
+    it('入力値は plain string（branded ではない）', () => {
       type Fields = typeof loginSchema.fields;
       type Input = FormInputValues<Fields>;
       expectTypeOf<Input['email']>().toEqualTypeOf<string>();
       expectTypeOf<Input['email']>().not.toEqualTypeOf<Email>();
     });
 
-    it('output values are branded, not plain string', () => {
+    it('出力値は branded（plain string ではない）', () => {
       type Fields = typeof loginSchema.fields;
       type Output = FormOutputValues<Fields>;
       expectTypeOf<Output['email']>().toEqualTypeOf<Email>();
@@ -66,34 +66,31 @@ describe('useForm type tests', () => {
       expectTypeOf<Output['email']>().not.toEqualTypeOf<string>();
     });
 
-    it('FieldSchema separates TInput and TOutput correctly', () => {
+    it('FieldSchema は TInput と TOutput を正しく分離する', () => {
       type Fields = typeof loginSchema.fields;
-      type EmailInput = Fields['email'] extends FieldSchema<infer TInput, any, any, any> ? TInput : never;
+      type EmailInput = Fields['email'] extends FieldSchema<infer T, any, any, any> ? T : never;
       type EmailOutput = Fields['email'] extends FieldSchema<any, infer TOutput, any, any> ? TOutput : never;
-      // TInput is plain string
       expectTypeOf<EmailInput>().toEqualTypeOf<string>();
-      // TOutput is branded
       expectTypeOf<EmailOutput>().toEqualTypeOf<Email>();
-      // They are different types
       expectTypeOf<EmailInput>().not.toEqualTypeOf<EmailOutput>();
     });
   });
 
-  describe('cross-brand safety in handleSubmit callback', () => {
-    it('handleSubmit values.email is Email type', () => {
+  describe('handleSubmit コールバックでのクロスブランド安全性', () => {
+    it('handleSubmit の values.email は Email 型', () => {
       type Fields = typeof loginSchema.fields;
       type Output = FormOutputValues<Fields>;
       expectTypeOf<Output['email']>().toEqualTypeOf<Email>();
     });
 
-    it('Email and Password are not assignable to each other', () => {
+    it('Email と Password は互いに代入できない', () => {
       type Fields = typeof loginSchema.fields;
       type Output = FormOutputValues<Fields>;
       expectTypeOf<Output['email']>().not.toEqualTypeOf<Output['password']>();
       expectTypeOf<Output['password']>().not.toEqualTypeOf<Output['email']>();
     });
 
-    it('handleSubmit handler type receives FormOutputValues', () => {
+    it('handleSubmit ハンドラの型は FormOutputValues を受け取る', () => {
       type Fields = typeof loginSchema.fields;
       type Form = FormState<Fields>;
       type HandlerParam = Parameters<Parameters<Form['handleSubmit']>[0]>[0];
@@ -101,29 +98,29 @@ describe('useForm type tests', () => {
     });
   });
 
-  describe('setFieldError / clearFieldError / validate types', () => {
-    it('setFieldError is constrained to field names', () => {
+  describe('setFieldError / clearFieldError / validate の型', () => {
+    it('setFieldError はフィールド名に制約される', () => {
       type Fields = typeof loginSchema.fields;
       type Form = FormState<Fields>;
       type SetFieldErrorName = Parameters<Form['setFieldError']>[0];
       expectTypeOf<SetFieldErrorName>().toEqualTypeOf<'email' | 'password'>();
     });
 
-    it('clearFieldError is constrained to field names (optional)', () => {
+    it('clearFieldError はフィールド名に制約される（optional）', () => {
       type Fields = typeof loginSchema.fields;
       type Form = FormState<Fields>;
       type ClearFieldErrorName = Parameters<Form['clearFieldError']>[0];
       expectTypeOf<ClearFieldErrorName>().toEqualTypeOf<'email' | 'password' | undefined>();
     });
 
-    it('validate is constrained to field names (optional)', () => {
+    it('validate はフィールド名に制約される（optional）', () => {
       type Fields = typeof loginSchema.fields;
       type Form = FormState<Fields>;
       type ValidateName = Parameters<Form['validate']>[0];
       expectTypeOf<ValidateName>().toEqualTypeOf<'email' | 'password' | undefined>();
     });
 
-    it('validate returns boolean', () => {
+    it('validate は boolean を返す', () => {
       type Fields = typeof loginSchema.fields;
       type Form = FormState<Fields>;
       type ValidateReturn = ReturnType<Form['validate']>;
@@ -131,29 +128,29 @@ describe('useForm type tests', () => {
     });
   });
 
-  describe('field() FieldState type', () => {
-    it('field("email") TInput is string (not branded)', () => {
+  describe('field() の FieldState 型', () => {
+    it('field("email") の T は string（branded ではない）', () => {
       type Fields = typeof loginSchema.fields;
-      type EmailInput = Fields['email'] extends FieldSchema<infer TInput, any, any, any> ? TInput : never;
+      type EmailInput = Fields['email'] extends FieldSchema<infer T, any, any, any> ? T : never;
       expectTypeOf<EmailInput>().toEqualTypeOf<string>();
     });
 
-    it('field("email") TOutput is Email branded type', () => {
+    it('field("email") の TOutput は Email branded 型', () => {
       type Fields = typeof loginSchema.fields;
       type EmailOutput = Fields['email'] extends FieldSchema<any, infer TOutput, any, any> ? TOutput : never;
       expectTypeOf<EmailOutput>().toEqualTypeOf<Email>();
     });
 
-    it('field("password") TInput is string, TOutput is Password', () => {
+    it('field("password") の T は string、TOutput は Password', () => {
       type Fields = typeof loginSchema.fields;
-      type PasswordInput = Fields['password'] extends FieldSchema<infer TInput, any, any, any> ? TInput : never;
+      type PasswordInput = Fields['password'] extends FieldSchema<infer T, any, any, any> ? T : never;
       type PasswordOutput = Fields['password'] extends FieldSchema<any, infer TOutput, any, any> ? TOutput : never;
       expectTypeOf<PasswordInput>().toEqualTypeOf<string>();
       expectTypeOf<PasswordOutput>().toEqualTypeOf<Password>();
     });
   });
 
-  describe('mixed hand-written VO + vo() VO form', () => {
+  describe('手書き VO + vo() VO の混在フォーム', () => {
     type Nickname = string & { readonly __brand: 'Nickname' };
     const nicknameRules = [{ code: 'TOO_SHORT', validate: (v: string) => v.length >= 2 }] as const;
     const NicknameDef: VOLike<string, Nickname> = {
@@ -167,31 +164,31 @@ describe('useForm type tests', () => {
       fields: {
         email: emailField({ required: true }),
         nickname: nicknameField({ required: true }),
-        bio: createField<string>(),
+        bio: createField<string>()(),
       },
     });
 
-    it('vo() VO field is Brand<string, "Email">', () => {
+    it('vo() VO フィールドは Brand<string, "Email">', () => {
       type Output = FormOutputValues<typeof mixedSchema.fields>;
       expectTypeOf<Output['email']>().toEqualTypeOf<Email>();
     });
 
-    it('hand-written VO field is Nickname branded type', () => {
+    it('手書き VO フィールドは Nickname branded 型', () => {
       type Output = FormOutputValues<typeof mixedSchema.fields>;
       expectTypeOf<Output['nickname']>().toEqualTypeOf<Nickname>();
     });
 
-    it('primitive field remains string', () => {
+    it('プリミティブフィールドは string', () => {
       type Output = FormOutputValues<typeof mixedSchema.fields>;
       expectTypeOf<Output['bio']>().toEqualTypeOf<string | undefined>();
     });
 
-    it('Email and Nickname are not assignable to each other', () => {
+    it('Email と Nickname は互いに代入できない', () => {
       type Output = FormOutputValues<typeof mixedSchema.fields>;
       expectTypeOf<Output['email']>().not.toEqualTypeOf<Output['nickname']>();
     });
 
-    it('input values are all base types', () => {
+    it('入力値は全てベース型', () => {
       type Input = FormInputValues<typeof mixedSchema.fields>;
       expectTypeOf<Input['email']>().toEqualTypeOf<string>();
       expectTypeOf<Input['nickname']>().toEqualTypeOf<string>();
@@ -199,30 +196,30 @@ describe('useForm type tests', () => {
     });
   });
 
-  describe('form with Infer type annotations', () => {
+  describe('Infer 型アノテーション付きフォーム', () => {
     type EmailType = Infer<typeof EmailVO>;
     type PasswordType = Infer<typeof PasswordVO>;
 
-    it('Infer<typeof VO> and Brand<T, B> are the same type', () => {
+    it('Infer<typeof VO> と Brand<T, B> は同じ型', () => {
       expectTypeOf<EmailType>().toEqualTypeOf<Email>();
       expectTypeOf<PasswordType>().toEqualTypeOf<Password>();
     });
 
-    it('Infer type matches FormOutputValues field type', () => {
+    it('Infer 型は FormOutputValues のフィールド型と一致', () => {
       type Output = FormOutputValues<typeof loginSchema.fields>;
       expectTypeOf<Output['email']>().toEqualTypeOf<EmailType>();
       expectTypeOf<Output['password']>().toEqualTypeOf<PasswordType>();
     });
   });
 
-  describe('ValidationMode type', () => {
-    it('mode is onChange | onBlur | onTouched | onSubmit', () => {
+  describe('ValidationMode 型', () => {
+    it('mode は onChange | onBlur | onTouched | onSubmit', () => {
       type Fields = typeof loginSchema.fields;
       type Form = FormState<Fields>;
       expectTypeOf<Form['mode']>().toEqualTypeOf<'onChange' | 'onBlur' | 'onTouched' | 'onSubmit'>();
     });
 
-    it('onTouched is a valid mode value', () => {
+    it('onTouched は有効な mode 値', () => {
       type Fields = typeof loginSchema.fields;
       type Form = FormState<Fields>;
       const _check: Form['mode'] = 'onTouched';
@@ -230,43 +227,43 @@ describe('useForm type tests', () => {
     });
   });
 
-  describe('async validation types', () => {
-    it('AsyncFieldValidator validate returns Promise<FieldError | null>', () => {
+  describe('非同期バリデーション型', () => {
+    it('AsyncFieldValidator の validate は Promise<FieldError | null> を返す', () => {
       type V = AsyncFieldValidator<string>;
       expectTypeOf<V['validate']>().toEqualTypeOf<(value: string) => Promise<FieldError | null>>();
     });
 
-    it('AsyncFieldValidator on is AsyncTrigger | undefined', () => {
+    it('AsyncFieldValidator の on は AsyncTrigger | undefined', () => {
       type V = AsyncFieldValidator<string>;
       expectTypeOf<V['on']>().toEqualTypeOf<'blur' | 'change' | 'submit' | undefined>();
     });
 
-    it('AsyncValidators keys are constrained to schema field names', () => {
+    it('AsyncValidators のキーはスキーマのフィールド名に制約される', () => {
       type Fields = typeof loginSchema.fields;
       type Validators = AsyncValidators<Fields>;
       expectTypeOf<keyof Validators>().toEqualTypeOf<'email' | 'password'>();
     });
 
-    it('AsyncValidators validate receives TInput type', () => {
+    it('AsyncValidators の validate は TInput 型を受け取る', () => {
       type Fields = typeof loginSchema.fields;
       type Validators = AsyncValidators<Fields>;
       type EmailValidator = NonNullable<Validators['email']>;
       expectTypeOf<Parameters<EmailValidator['validate']>[0]>().toEqualTypeOf<string>();
     });
 
-    it('isValidating is boolean', () => {
+    it('isValidating は boolean', () => {
       type Fields = typeof loginSchema.fields;
       type Form = FormState<Fields>;
       expectTypeOf<Form['isValidating']>().toEqualTypeOf<boolean>();
     });
 
-    it('validateAsync returns Promise<boolean>', () => {
+    it('validateAsync は Promise<boolean> を返す', () => {
       type Fields = typeof loginSchema.fields;
       type Form = FormState<Fields>;
       expectTypeOf<ReturnType<Form['validateAsync']>>().toEqualTypeOf<Promise<boolean>>();
     });
 
-    it('validateAsync argument is constrained to field names (optional)', () => {
+    it('validateAsync の引数はフィールド名に制約される（optional）', () => {
       type Fields = typeof loginSchema.fields;
       type Form = FormState<Fields>;
       type ValidateAsyncName = Parameters<Form['validateAsync']>[0];

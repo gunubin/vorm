@@ -50,7 +50,7 @@ describe('createFormSchema', () => {
     const schema = createFormSchema({
       fields: {
         email: emailField({ required: true }),
-        name: createField<string>({ required: true }),
+        name: createField<string>()({ required: true }),
       },
     });
 
@@ -89,7 +89,7 @@ describe('createFormSchema', () => {
     const schema = createFormSchema({
       fields: {
         password: passwordField({ required: true }),
-        confirmPassword: createField<string>({ required: true }),
+        confirmPassword: createField<string>()({ required: true }),
       },
       resolver,
     });

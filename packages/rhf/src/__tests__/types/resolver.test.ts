@@ -25,29 +25,29 @@ const loginSchema = createFormSchema({
   },
 });
 
-describe('RHF resolver type tests', () => {
-  it('FormInputValues is plain string', () => {
+describe('RHF resolver 型テスト', () => {
+  it('FormInputValues は plain string', () => {
     type Input = FormInputValues<typeof loginSchema.fields>;
     expectTypeOf<Input['email']>().toEqualTypeOf<string>();
     expectTypeOf<Input['password']>().toEqualTypeOf<string>();
   });
 
-  it('FormOutputValues is Branded Type', () => {
+  it('FormOutputValues は Branded Type', () => {
     type Output = FormOutputValues<typeof loginSchema.fields>;
     expectTypeOf<Output['email']>().toEqualTypeOf<Email>();
     expectTypeOf<Output['password']>().toEqualTypeOf<Password>();
   });
 
-  it('Email and Password are not assignable to each other', () => {
+  it('Email と Password は互いに代入できない', () => {
     type Output = FormOutputValues<typeof loginSchema.fields>;
     expectTypeOf<Output['email']>().not.toEqualTypeOf<Output['password']>();
   });
 
-  it('optional field becomes | undefined', () => {
+  it('optional フィールドは | undefined になる', () => {
     const schema = createFormSchema({
       fields: {
         email: emailField({ required: true }),
-        nickname: createField<string>({ required: false }),
+        nickname: createField<string>()({ required: false }),
       },
     });
 
@@ -57,8 +57,8 @@ describe('RHF resolver type tests', () => {
   });
 });
 
-describe('useVorm handleSubmit type tests', () => {
-  it('handleSubmit callback first argument is Branded Type', () => {
+describe('useVorm handleSubmit 型テスト', () => {
+  it('handleSubmit コールバックの第1引数は Branded Type', () => {
     type Fields = typeof loginSchema.fields;
     type Output = FormOutputValues<Fields> & FieldValues;
 
@@ -72,7 +72,7 @@ describe('useVorm handleSubmit type tests', () => {
     expectTypeOf<SubmitData['password']>().toEqualTypeOf<Password>();
   });
 
-  it('handleSubmit values are Branded Type, not plain string', () => {
+  it('handleSubmit の値は Branded Type（plain string ではない）', () => {
     type Fields = typeof loginSchema.fields;
     type Output = FormOutputValues<Fields> & FieldValues;
 
@@ -80,13 +80,11 @@ describe('useVorm handleSubmit type tests', () => {
     type OnValidCallback = Parameters<Form['handleSubmit']>[0];
     type SubmitData = Parameters<OnValidCallback>[0];
 
-    // assignable to string (Branded Type is a subtype of string)
     expectTypeOf<SubmitData['email']>().toMatchTypeOf<string>();
-    // but not plain string (carries Brand info)
     expectTypeOf<string>().not.toMatchTypeOf<SubmitData['email']>();
   });
 
-  it('Email and Password cannot be confused in handleSubmit', () => {
+  it('handleSubmit で Email と Password を混同できない', () => {
     type Fields = typeof loginSchema.fields;
     type Form = ReturnType<typeof useVorm<Fields>>;
     type OnValidCallback = Parameters<Form['handleSubmit']>[0];

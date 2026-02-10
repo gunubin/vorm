@@ -19,18 +19,22 @@ const NicknameDef = {
   create: (value: string): Nickname => validateAndCreate(value, nicknameRules, 'Nickname') as Nickname,
 };
 
-const usernameField = createField(Username);
-const nicknameField = createField(NicknameDef);
+const usernameField = createField(Username, {
+  messages: { minLength: '3文字以上で入力してください' },
+});
+const nicknameField = createField(NicknameDef, {
+  messages: { minLength: '2文字以上で入力してください' },
+});
 
 const schemaA = createFormSchema({
   fields: {
-    username: usernameField({ required: true, messages: { REQUIRED: '必須です', minLength: '3文字以上で入力してください' } }),
+    username: usernameField({ required: true, messages: { REQUIRED: '必須です' } }),
   },
 });
 
 const schemaB = createFormSchema({
   fields: {
-    nickname: nicknameField({ required: true, messages: { REQUIRED: '必須です', minLength: '2文字以上で入力してください' } }),
+    nickname: nicknameField({ required: true, messages: { REQUIRED: '必須です' } }),
   },
 });
 

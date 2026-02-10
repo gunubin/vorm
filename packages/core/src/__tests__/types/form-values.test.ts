@@ -28,19 +28,19 @@ const loginFormSchema = createFormSchema({
 const mixedFormSchema = createFormSchema({
   fields: {
     email: emailField({ required: true }),
-    nickname: createField<string>({ required: true }),
-    bio: createField<string>(),
+    nickname: createField<string>()({ required: true }),
+    bio: createField<string>()(),
   },
 });
 
 describe('FormInputValues', () => {
-  it('VO-derived fields become base type (string)', () => {
+  it('VO 由来のフィールドはベース型（string）になる', () => {
     type Input = FormInputValues<typeof loginFormSchema.fields>;
     expectTypeOf<Input['email']>().toEqualTypeOf<string>();
     expectTypeOf<Input['password']>().toEqualTypeOf<string>();
   });
 
-  it('primitive fields retain their type', () => {
+  it('プリミティブフィールドは型を保持する', () => {
     type Input = FormInputValues<typeof mixedFormSchema.fields>;
     expectTypeOf<Input['nickname']>().toEqualTypeOf<string>();
   });
@@ -57,13 +57,13 @@ describe('FormInputValues', () => {
 });
 
 describe('FormOutputValues', () => {
-  it('VO-derived fields become branded type', () => {
+  it('VO 由来のフィールドは branded 型になる', () => {
     type Output = FormOutputValues<typeof loginFormSchema.fields>;
     expectTypeOf<Output['email']>().toEqualTypeOf<Email>();
     expectTypeOf<Output['password']>().toEqualTypeOf<Password>();
   });
 
-  it('primitive fields are same as input type', () => {
+  it('プリミティブフィールドは入力型と同じ', () => {
     type Output = FormOutputValues<typeof mixedFormSchema.fields>;
     expectTypeOf<Output['nickname']>().toEqualTypeOf<string>();
   });
@@ -73,7 +73,7 @@ describe('FormOutputValues', () => {
     expectTypeOf<Output['bio']>().toEqualTypeOf<string | undefined>();
   });
 
-  it('required: true → T (branded type)', () => {
+  it('required: true → T (branded 型)', () => {
     type Output = FormOutputValues<typeof loginFormSchema.fields>;
     expectTypeOf<Output['email']>().toEqualTypeOf<Email>();
   });

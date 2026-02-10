@@ -1,9 +1,9 @@
 import type { FieldSchema, FieldError, ErrorMessages } from './types.js';
 import { resolveMessage } from './resolve-message.js';
 
-export function validateField<TInput>(
-  value: TInput | undefined | null,
-  fieldSchema: FieldSchema<TInput, any, boolean, any>,
+export function validateField<T>(
+  value: T | undefined | null,
+  fieldSchema: FieldSchema<T, any, boolean, any>,
   formMessages?: ErrorMessages,
 ): FieldError | null {
   if (fieldSchema.required) {
@@ -19,7 +19,7 @@ export function validateField<TInput>(
   }
 
   for (const rule of fieldSchema.rules) {
-    if (!rule.validate(value as TInput)) {
+    if (!rule.validate(value as T)) {
       const message = resolveMessage(rule.code, formMessages, fieldSchema.messages);
       return { code: rule.code, message };
     }

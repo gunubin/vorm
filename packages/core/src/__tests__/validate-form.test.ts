@@ -50,7 +50,7 @@ describe('validateForm', () => {
     const signupSchema = createFormSchema({
       fields: {
         password: passwordField({ required: true }),
-        confirmPassword: createField<string>({ required: true }),
+        confirmPassword: createField<string>()({ required: true }),
       },
       resolver: (values) => {
         if (values.password !== values.confirmPassword) {
@@ -88,7 +88,7 @@ describe('validateForm', () => {
       const schema = createFormSchema({
         fields: {
           password: passwordField({ required: true }),
-          confirmPassword: createField<string>({ required: true }),
+          confirmPassword: createField<string>()({ required: true }),
         },
         resolver: () => {
           resolverCalled = true;
@@ -112,9 +112,8 @@ describe('validateForm', () => {
           },
         }),
         confirmPassword: createField<string>({
-          required: true,
           messages: { REQUIRED: 'Please enter confirmation password' },
-        }),
+        })({ required: true }),
       },
       resolver: (values) => {
         if (values.password !== values.confirmPassword) {

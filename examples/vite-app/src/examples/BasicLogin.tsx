@@ -19,13 +19,17 @@ type Email = Infer<typeof Email>;
 const Password = vo('Password', [minLength(8)]);
 type Password = Infer<typeof Password>;
 
-const emailField = createField(Email);
-const passwordField = createField(Password);
+const emailField = createField(Email, {
+  messages: { email: 'メールアドレスの形式が正しくありません' },
+});
+const passwordField = createField(Password, {
+  messages: { minLength: '8文字以上で入力してください' },
+});
 
 const schema = createFormSchema({
   fields: {
-    email: emailField({ required: true, messages: { REQUIRED: '必須です', email: 'メールアドレスの形式が正しくありません' } }),
-    password: passwordField({ required: true, messages: { REQUIRED: '必須です', minLength: '8文字以上で入力してください' } }),
+    email: emailField({ required: true, messages: { REQUIRED: '必須です' } }),
+    password: passwordField({ required: true, messages: { REQUIRED: '必須です' } }),
   },
 });
 

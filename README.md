@@ -11,8 +11,11 @@ vorm brings Value Object (branded type) safety to form handling. Define your dom
 - **Selective re-rendering** — Built on `useSyncExternalStore`; `useField()` subscribes per-field, not per-form
 - **Async validation** — Per-field async validators with debounce, AbortController race-condition handling
 - **Validation modes** — `onChange`, `onBlur`, `onTouched`, `onSubmit`
+- **Parse / Format** — Transform between raw input strings and typed values with `parse` and `format`
+- **Type-safe messages** — `ErrorMessageMap<C>` constrains message keys to declared validation codes
 - **Zod adapter** — Convert Zod schemas to vorm validation rules with `@vorm/zod`
-- **Zero dependencies** — Only peer deps are `react` and optionally `zod`
+- **RHF adapter** — Use vorm schemas as a React Hook Form resolver with `@vorm/rhf`
+- **Zero dependencies** — Only peer deps are `react` and optionally `zod` / `react-hook-form`
 - **React 18+ / React 19** — Uses native `useSyncExternalStore`, no shims
 
 ## Packages
@@ -22,6 +25,7 @@ vorm brings Value Object (branded type) safety to form handling. Define your dom
 | `@vorm/core` | VO definitions, field schemas, validation logic |
 | `@vorm/react` | `useForm`, `useField` hooks |
 | `@vorm/zod` | `fromZod()` — convert Zod schemas to validation rules |
+| `@vorm/rhf` | `createVormResolver()`, `useVorm()` — React Hook Form adapter |
 
 ## Quick Start
 
@@ -105,6 +109,30 @@ function LoginForm() {
 
 `form.field('email')` also works — but it reads from the form-level snapshot, so it re-renders with every field change. Use `useField` for performance-critical forms.
 
+## Parse / Format
+
+Use `parse` and `format` to transform between raw input strings and typed values.
+
+```ts
+const priceField = createField<number>({
+  parse: (v: string) => Number(v.replace(/,/g, '')),   // "1,000" → 1000
+  format: (v: number) => v.toLocaleString(),            // 1000 → "1,000"
+})({ required: true });
+```
+
+In `useField`, the `formattedValue` property holds the display string:
+
+```tsx
+const price = useField(form, 'price');
+
+<input
+  value={price.formattedValue}                    // formatted for display
+  onChange={(e) => price.onChange(e.target.value)}  // raw string → parse() → store
+/>
+```
+
+Data flow: **user input → `parse()` → stored value → `format()` → `formattedValue`**
+
 ## Async Validation
 
 ```ts
@@ -156,6 +184,57 @@ const Email = vo('Email', fromZod(emailSchema));
 
 `fromZod()` extracts Zod's built-in checks (`min`, `max`, `email`, `regex`) and converts them to vorm `ValidationRule[]`. Works with `ZodBranded` schemas too.
 
+## React Hook Form Adapter
+
+```bash
+npm install @vorm/rhf react-hook-form
+```
+
+### useVorm
+
+`useVorm` is a thin wrapper around RHF's `useForm` that automatically wires up a vorm resolver. All RHF APIs work as-is.
+
+```tsx
+import { useVorm } from '@vorm/rhf';
+
+function LoginForm() {
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useVorm(schema, {
+    defaultValues: { email: '', password: '' },
+    mode: 'onBlur',
+  });
+
+  return (
+    <form onSubmit={handleSubmit((values) => {
+      // values.email: Brand<string, 'Email'>
+      // values.password: Brand<string, 'Password'>
+      login(values.email, values.password);
+    })}>
+      <input {...register('email')} />
+      {errors.email && <span>{errors.email.message}</span>}
+
+      <input type="password" {...register('password')} />
+      {errors.password && <span>{errors.password.message}</span>}
+
+      <button type="submit" disabled={isSubmitting}>Log in</button>
+    </form>
+  );
+}
+```
+
+### createVormResolver
+
+If you need to use the resolver directly with RHF's `useForm`:
+
+```ts
+import { useForm } from 'react-hook-form';
+import { createVormResolver } from '@vorm/rhf';
+
+const { register, handleSubmit } = useForm({
+  resolver: createVormResolver(schema),
+  defaultValues: { email: '', password: '' },
+});
+```
+
 ## API Reference
 
 ### `@vorm/core`
@@ -174,7 +253,7 @@ Email.create('bad');          // throws VOValidationError
 Email.safeCreate('bad');      // { success: false, error: { code: 'INVALID' } }
 ```
 
-#### `createField(vo)`
+#### `createField(vo, options?)`
 
 Create a field factory from a VO definition. Returns a function that accepts `{ required, messages }`.
 
@@ -183,12 +262,27 @@ const emailField = createField(Email);
 const field = emailField({ required: true, messages: { REQUIRED: 'Required' } });
 ```
 
-#### `createField(config)` (without VO)
-
-Create a field schema directly for plain types.
+With `parse` / `format`:
 
 ```ts
-const ageField = createField<number>({ required: true, rules: [{ code: 'MIN', validate: (v) => v >= 0 }] });
+const emailField = createField(Email, {
+  parse: (v: string) => v.trim(),
+  format: (v: string) => v.toLowerCase(),
+});
+```
+
+#### `createField(config)` (without VO)
+
+Create a field schema directly for plain types. The returned factory is called with `{ required, messages }`.
+
+```ts
+const ageField = createField<number>({
+  rules: [{ code: 'MIN', validate: (v) => v >= 0 }],
+  parse: (v: string) => Number(v),
+  format: (v: number) => String(v),
+});
+
+const field = ageField({ required: true });
 ```
 
 #### `createRule(code, validate)`
@@ -262,10 +356,14 @@ try {
 #### Utility Types
 
 ```ts
-import type { Brand, Infer } from '@vorm/core';
+import type { Brand, Infer, ErrorMessageMap } from '@vorm/core';
 
 type EmailType = Brand<string, 'Email'>;    // string & { readonly __brand: 'Email' }
 type Inferred = Infer<typeof Email>;         // Brand<string, 'Email'>
+
+// ErrorMessageMap<C> constrains keys to declared validation codes
+type LoginMessages = ErrorMessageMap<'INVALID_FORMAT' | 'REQUIRED'>;
+// → { INVALID_FORMAT?: string; REQUIRED?: string }
 ```
 
 ### `@vorm/react`
@@ -310,7 +408,7 @@ Subscribe to a single field with per-field re-rendering.
 
 ```ts
 const email = useField(form, 'email');
-// email.value, email.onChange, email.onBlur, email.error, email.isDirty, email.isTouched
+// email.value, email.formattedValue, email.onChange, email.onBlur, email.error, email.isDirty, email.isTouched
 ```
 
 ### `@vorm/zod`
@@ -321,15 +419,40 @@ Convert a Zod schema to `ValidationRule[]`.
 
 Supported checks: `min`, `max`, `email`, `regex`. Unsupported checks pass through as no-op rules.
 
+### `@vorm/rhf`
+
+#### `createVormResolver(schema)`
+
+Create a React Hook Form `Resolver` from a `FormSchema`. Applies `parse` transforms, runs vorm validation, and returns branded output values.
+
+```ts
+import { createVormResolver } from '@vorm/rhf';
+
+const resolver = createVormResolver(schema);
+// Use with RHF's useForm({ resolver })
+```
+
+#### `useVorm(schema, props?)`
+
+Thin wrapper around RHF's `useForm` that auto-configures the resolver. Accepts all RHF `UseFormProps` except `resolver`.
+
+```ts
+import { useVorm } from '@vorm/rhf';
+
+const { register, handleSubmit, formState } = useVorm(schema, {
+  defaultValues: { email: '', password: '' },
+});
+```
+
 ## Architecture
 
 ```
-@vorm/core          @vorm/zod
-  vo()               fromZod()
-  createField()         │
-  createFormSchema()    │
-  validateField()  ←────┘
-  validateForm()
+@vorm/core          @vorm/zod         @vorm/rhf
+  vo()               fromZod()         createVormResolver()
+  createField()         │              useVorm()
+  createFormSchema()    │                 │
+  validateField()  ←────┘                 │
+  validateForm()  ←───────────────────────┘
        │
        ▼
 @vorm/react
@@ -339,7 +462,7 @@ Supported checks: `min`, `max`, `email`, `regex`. Unsupported checks pass throug
 
 ## Requirements
 
-- TypeScript 5.0+
+- TypeScript 5.5+
 - React 18+ or React 19
 
 ## License

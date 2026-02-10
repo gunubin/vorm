@@ -8,12 +8,12 @@ const PasswordVO = vo('Password', [
 ]);
 
 describe('createField (VO)', () => {
-  it('VODefinition からファクトリ関数を生成する', () => {
+  it('generates a factory function from VODefinition', () => {
     const passwordField = createField(PasswordVO);
     expect(typeof passwordField).toBe('function');
   });
 
-  it('ファクトリがFieldSchemaを返す', () => {
+  it('factory returns FieldSchema', () => {
     const passwordField = createField(PasswordVO);
     const field = passwordField({ required: true });
 
@@ -22,44 +22,44 @@ describe('createField (VO)', () => {
     expect(field.rules).toHaveLength(2);
   });
 
-  it('required: true で FieldSchema を生成する', () => {
+  it('generates FieldSchema with required: true', () => {
     const passwordField = createField(PasswordVO);
     const field = passwordField({ required: true });
 
     expect(field.required).toBe(true);
   });
 
-  it('required: false で FieldSchema を生成する', () => {
+  it('generates FieldSchema with required: false', () => {
     const passwordField = createField(PasswordVO);
     const field = passwordField({ required: false });
 
     expect(field.required).toBe(false);
   });
 
-  it('required 省略時はデフォルトで false', () => {
+  it('defaults to required: false when omitted', () => {
     const passwordField = createField(PasswordVO);
     const field = passwordField();
 
     expect(field.required).toBe(false);
   });
 
-  it('Record 形式の messages を設定できる', () => {
+  it('can set messages in Record format', () => {
     const passwordField = createField(PasswordVO);
     const field = passwordField({
       required: true,
       messages: {
-        REQUIRED: 'パスワードを入力してください',
-        TOO_SHORT: '8文字以上で入力してください',
+        REQUIRED: 'Please enter a password',
+        TOO_SHORT: 'Must be at least 8 characters',
       },
     });
 
     expect(field.messages).toEqual({
-      REQUIRED: 'パスワードを入力してください',
-      TOO_SHORT: '8文字以上で入力してください',
+      REQUIRED: 'Please enter a password',
+      TOO_SHORT: 'Must be at least 8 characters',
     });
   });
 
-  it('関数形式の messages を設定できる', () => {
+  it('can set messages in function format', () => {
     const messageFn = ({ code }: { code: string }) => `Error: ${code}`;
     const passwordField = createField(PasswordVO);
     const field = passwordField({
@@ -70,7 +70,7 @@ describe('createField (VO)', () => {
     expect(field.messages).toBe(messageFn);
   });
 
-  it('VO の rules が FieldSchema に継承される', () => {
+  it('VO rules are inherited by FieldSchema', () => {
     const passwordField = createField(PasswordVO);
     const field = passwordField({ required: true });
 

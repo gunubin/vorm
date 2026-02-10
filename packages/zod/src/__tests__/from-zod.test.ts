@@ -4,7 +4,7 @@ import { fromZod } from '../from-zod.js';
 
 describe('fromZod', () => {
   describe('z.string()', () => {
-    it('.min() → ValidationRule 変換', () => {
+    it('.min() → ValidationRule conversion', () => {
       const rules = fromZod(z.string().min(8, 'TOO_SHORT'));
 
       expect(rules).toHaveLength(1);
@@ -13,7 +13,7 @@ describe('fromZod', () => {
       expect(rules[0].validate('1234567')).toBe(false);
     });
 
-    it('.email() → ValidationRule 変換', () => {
+    it('.email() → ValidationRule conversion', () => {
       const rules = fromZod(z.string().email('INVALID_EMAIL'));
 
       expect(rules).toHaveLength(1);
@@ -22,7 +22,7 @@ describe('fromZod', () => {
       expect(rules[0].validate('invalid')).toBe(false);
     });
 
-    it('.regex() → ValidationRule 変換', () => {
+    it('.regex() → ValidationRule conversion', () => {
       const rules = fromZod(z.string().regex(/[A-Z]/, 'NO_UPPERCASE'));
 
       expect(rules).toHaveLength(1);
@@ -31,7 +31,7 @@ describe('fromZod', () => {
       expect(rules[0].validate('hello')).toBe(false);
     });
 
-    it('複数ルールチェーン → 複数 ValidationRule', () => {
+    it('multiple rule chain → multiple ValidationRules', () => {
       const rules = fromZod(
         z.string().min(8, 'TOO_SHORT').regex(/[A-Z]/, 'NO_UPPERCASE').email('BAD_EMAIL'),
       );
@@ -44,7 +44,7 @@ describe('fromZod', () => {
   });
 
   describe('z.number()', () => {
-    it('.min() → ValidationRule 変換', () => {
+    it('.min() → ValidationRule conversion', () => {
       const rules = fromZod(z.number().min(0, 'TOO_YOUNG'));
 
       expect(rules).toHaveLength(1);
@@ -53,7 +53,7 @@ describe('fromZod', () => {
       expect(rules[0].validate(-1)).toBe(false);
     });
 
-    it('.max() → ValidationRule 変換', () => {
+    it('.max() → ValidationRule conversion', () => {
       const rules = fromZod(z.number().max(150, 'TOO_OLD'));
 
       expect(rules).toHaveLength(1);
@@ -63,18 +63,18 @@ describe('fromZod', () => {
     });
   });
 
-  describe('code の設定', () => {
-    it('第2引数が code に設定される', () => {
+  describe('code configuration', () => {
+    it('2nd argument is set as code', () => {
       const rules = fromZod(z.string().min(1, 'CUSTOM_CODE'));
       expect(rules[0].code).toBe('CUSTOM_CODE');
     });
 
-    it('code 省略時は zod の check kind を使用', () => {
+    it('uses zod check kind when code is omitted', () => {
       const rules = fromZod(z.string().min(1));
       expect(rules[0].code).toBe('min');
     });
 
-    it('email の code 省略時', () => {
+    it('email code when omitted', () => {
       const rules = fromZod(z.string().email());
       expect(rules[0].code).toBe('email');
     });
@@ -145,7 +145,7 @@ describe('fromZod', () => {
   });
 
   describe('.brand()', () => {
-    it('.brand() が無視される（内部のルールのみ抽出される）', () => {
+    it('.brand() is ignored (only inner rules are extracted)', () => {
       const rules = fromZod(z.string().min(8, 'TOO_SHORT').brand<'Password'>());
 
       expect(rules).toHaveLength(1);

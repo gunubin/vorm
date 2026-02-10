@@ -4,7 +4,7 @@ import { vo } from '../vo.js';
 import type { ValidationRule } from '../types.js';
 
 describe('createRule', () => {
-  it('option ありのルールファクトリを作成できる', () => {
+  it('creates a rule factory with option', () => {
     const minLength = createRule(
       'minLength',
       (val: string, min: number) => val.length >= min,
@@ -16,7 +16,7 @@ describe('createRule', () => {
     expect(rule.validate('1234567')).toBe(false);
   });
 
-  it('option なしのルールファクトリを作成できる', () => {
+  it('creates a rule factory without option', () => {
     const hasUppercase = createRule(
       'hasUppercase',
       (val: string) => /[A-Z]/.test(val),
@@ -28,7 +28,7 @@ describe('createRule', () => {
     expect(rule.validate('hello')).toBe(false);
   });
 
-  it('返却された関数が ValidationRule 型に準拠する', () => {
+  it('returned function conforms to ValidationRule type', () => {
     const minLength = createRule(
       'minLength',
       (val: string, min: number) => val.length >= min,
@@ -39,7 +39,7 @@ describe('createRule', () => {
     expect(rule).toHaveProperty('validate');
   });
 
-  it('vo() と組み合わせて使える', () => {
+  it('works with vo()', () => {
     const minLength = createRule(
       'minLength',
       (val: string, min: number) => val.length >= min,
@@ -57,7 +57,7 @@ describe('createRule', () => {
     expect(PasswordVO.rules[1].code).toBe('hasUppercase');
   });
 
-  it('同じルールファクトリから異なる option で複数ルールを作成できる', () => {
+  it('creates multiple rules with different options from the same factory', () => {
     const minLength = createRule(
       'minLength',
       (val: string, min: number) => val.length >= min,

@@ -15,7 +15,7 @@ const emailField = createField(EmailVO);
 const passwordField = createField(PasswordVO);
 
 describe('createFormSchema', () => {
-  it('fields を持つ FormSchema を返す', () => {
+  it('returns a FormSchema with fields', () => {
     const schema = createFormSchema({
       fields: {
         email: emailField({ required: true }),
@@ -28,7 +28,7 @@ describe('createFormSchema', () => {
     expect(schema.fields.password).toBeDefined();
   });
 
-  it('空の fields で動作する', () => {
+  it('works with empty fields', () => {
     const schema = createFormSchema({
       fields: {},
     });
@@ -36,7 +36,7 @@ describe('createFormSchema', () => {
     expect(schema.fields).toEqual({});
   });
 
-  it('単一フィールドで動作する', () => {
+  it('works with a single field', () => {
     const schema = createFormSchema({
       fields: {
         email: emailField({ required: true }),
@@ -46,7 +46,7 @@ describe('createFormSchema', () => {
     expect(Object.keys(schema.fields)).toEqual(['email']);
   });
 
-  it('VO由来とプリミティブの混在', () => {
+  it('supports mixed VO-derived and primitive fields', () => {
     const schema = createFormSchema({
       fields: {
         email: emailField({ required: true }),
@@ -58,29 +58,29 @@ describe('createFormSchema', () => {
     expect(schema.fields.name.vo).toBeNull();
   });
 
-  it('messages（フォームレベル上書き）を設定できる', () => {
+  it('can set messages (form-level override)', () => {
     const schema = createFormSchema({
       fields: {
         password: passwordField({ required: true }),
       },
       messages: {
         password: {
-          TOO_SHORT: 'ログイン画面用：8文字以上入力してください',
+          TOO_SHORT: 'For login screen: Must be at least 8 characters',
         },
       },
     });
 
     expect(schema.messages).toBeDefined();
     expect(schema.messages!.password).toEqual({
-      TOO_SHORT: 'ログイン画面用：8文字以上入力してください',
+      TOO_SHORT: 'For login screen: Must be at least 8 characters',
     });
   });
 
-  it('resolver 関数を設定できる', () => {
+  it('can set resolver function', () => {
     const resolver = (values: { password: string; confirmPassword: string }) => {
       if (values.password !== values.confirmPassword) {
         return {
-          confirmPassword: { code: 'MISMATCH', message: 'パスワードが一致しません' },
+          confirmPassword: { code: 'MISMATCH', message: 'Passwords do not match' },
         };
       }
       return null;

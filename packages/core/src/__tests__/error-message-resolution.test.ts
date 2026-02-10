@@ -2,73 +2,73 @@ import { describe, it, expect } from 'vitest';
 import { resolveMessage } from '../resolve-message.js';
 
 describe('resolveMessage', () => {
-  describe('3層優先度', () => {
-    it('FormSchema の messages が最優先', () => {
-      const fieldMessages = { TOO_SHORT: '項目レベル' };
-      const formMessages = { TOO_SHORT: 'フォームレベル' };
+  describe('3-level priority', () => {
+    it('FormSchema messages have highest priority', () => {
+      const fieldMessages = { TOO_SHORT: 'field level' };
+      const formMessages = { TOO_SHORT: 'form level' };
 
       const message = resolveMessage('TOO_SHORT', formMessages, fieldMessages);
-      expect(message).toBe('フォームレベル');
+      expect(message).toBe('form level');
     });
 
-    it('FormSchema に定義がなければ FieldSchema の messages', () => {
-      const fieldMessages = { TOO_SHORT: '項目レベル' };
-      const formMessages = { OTHER_CODE: 'フォームレベル' };
+    it('falls back to FieldSchema messages when not in FormSchema', () => {
+      const fieldMessages = { TOO_SHORT: 'field level' };
+      const formMessages = { OTHER_CODE: 'form level' };
 
       const message = resolveMessage('TOO_SHORT', formMessages, fieldMessages);
-      expect(message).toBe('項目レベル');
+      expect(message).toBe('field level');
     });
 
-    it('両方に定義がなければデフォルトメッセージ', () => {
+    it('falls back to default message when not in either', () => {
       const message = resolveMessage('REQUIRED', {}, {});
       expect(message).toBe('This field is required');
     });
 
-    it('デフォルトメッセージにもなければコードそのもの', () => {
+    it('falls back to code itself when no default message exists', () => {
       const message = resolveMessage('UNKNOWN_CODE', {}, {});
       expect(message).toBe('UNKNOWN_CODE');
     });
   });
 
-  describe('Record 形式', () => {
-    it('コードに対応するメッセージを返す', () => {
+  describe('Record format', () => {
+    it('returns message corresponding to code', () => {
       const messages = {
-        TOO_SHORT: '8文字以上で入力してください',
-        NO_UPPERCASE: '大文字を含めてください',
+        TOO_SHORT: 'Must be at least 8 characters',
+        NO_UPPERCASE: 'Must contain an uppercase letter',
       };
 
-      expect(resolveMessage('TOO_SHORT', messages)).toBe('8文字以上で入力してください');
-      expect(resolveMessage('NO_UPPERCASE', messages)).toBe('大文字を含めてください');
+      expect(resolveMessage('TOO_SHORT', messages)).toBe('Must be at least 8 characters');
+      expect(resolveMessage('NO_UPPERCASE', messages)).toBe('Must contain an uppercase letter');
     });
 
-    it('未定義のコードはフォールバック', () => {
-      const messages = { TOO_SHORT: '8文字以上' };
+    it('undefined code falls back', () => {
+      const messages = { TOO_SHORT: 'At least 8 characters' };
 
       expect(resolveMessage('UNKNOWN', messages)).toBe('UNKNOWN');
     });
   });
 
-  describe('関数形式', () => {
-    it('code を引数に受け取りメッセージを返す', () => {
+  describe('function format', () => {
+    it('receives code as argument and returns message', () => {
       const messageFn = ({ code }: { code: string }) => {
-        if (code === 'TOO_SHORT') return '8文字以上で入力してください';
-        return 'バリデーションエラー';
+        if (code === 'TOO_SHORT') return 'Must be at least 8 characters';
+        return 'Validation error';
       };
 
-      expect(resolveMessage('TOO_SHORT', messageFn)).toBe('8文字以上で入力してください');
-      expect(resolveMessage('UNKNOWN', messageFn)).toBe('バリデーションエラー');
+      expect(resolveMessage('TOO_SHORT', messageFn)).toBe('Must be at least 8 characters');
+      expect(resolveMessage('UNKNOWN', messageFn)).toBe('Validation error');
     });
   });
 
-  describe('source が undefined の場合', () => {
-    it('undefined をスキップして次の source を使う', () => {
-      const fieldMessages = { TOO_SHORT: '項目レベル' };
+  describe('when source is undefined', () => {
+    it('skips undefined and uses next source', () => {
+      const fieldMessages = { TOO_SHORT: 'field level' };
 
       const message = resolveMessage('TOO_SHORT', undefined, fieldMessages);
-      expect(message).toBe('項目レベル');
+      expect(message).toBe('field level');
     });
 
-    it('全て undefined ならデフォルトまたはコード', () => {
+    it('falls back to default or code when all are undefined', () => {
       expect(resolveMessage('REQUIRED', undefined, undefined)).toBe('This field is required');
       expect(resolveMessage('CUSTOM', undefined, undefined)).toBe('CUSTOM');
     });

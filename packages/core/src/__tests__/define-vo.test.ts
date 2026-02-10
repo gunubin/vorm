@@ -13,7 +13,7 @@ const minValue = createRule(
 );
 
 describe('vo', () => {
-  it('brand, rules, create, safeCreate を持つ VODefinition を返す', () => {
+  it('returns a VODefinition with brand, rules, create, safeCreate', () => {
     const PasswordVO = vo('Password', [minLength(8)]);
 
     expect(PasswordVO.brand).toBe('Password');
@@ -23,42 +23,42 @@ describe('vo', () => {
     expect(typeof PasswordVO.safeCreate).toBe('function');
   });
 
-  it('rules が空配列でも動作する', () => {
+  it('works with empty rules array', () => {
     const EmptyVO = vo('Empty', []);
 
     expect(EmptyVO.rules).toEqual([]);
     expect(EmptyVO.brand).toBe('Empty');
   });
 
-  it('create が有効な値でブランド型の値を返す', () => {
+  it('create returns branded value for valid input', () => {
     const PasswordVO = vo('Password', [minLength(8)]);
 
     const result = PasswordVO.create('mypassword');
     expect(result).toBe('mypassword');
   });
 
-  it('create が無効な値で VOValidationError を投げる', () => {
+  it('create throws VOValidationError for invalid input', () => {
     const PasswordVO = vo('Password', [minLength(8)]);
 
     expect(() => PasswordVO.create('short')).toThrow(VOValidationError);
     expect(() => PasswordVO.create('short')).toThrow('Password is not valid (TOO_SHORT)');
   });
 
-  it('safeCreate が有効な値で success を返す', () => {
+  it('safeCreate returns success for valid input', () => {
     const PasswordVO = vo('Password', [minLength(8)]);
 
     const result = PasswordVO.safeCreate('mypassword');
     expect(result).toEqual({ success: true, data: 'mypassword' });
   });
 
-  it('safeCreate が無効な値で failure を返す', () => {
+  it('safeCreate returns failure for invalid input', () => {
     const PasswordVO = vo('Password', [minLength(8)]);
 
     const result = PasswordVO.safeCreate('short');
     expect(result).toEqual({ success: false, error: { code: 'TOO_SHORT' } });
   });
 
-  it('rules の定義順が保持される', () => {
+  it('preserves rules definition order', () => {
     const second = createRule(
       'SECOND',
       (v: string, min: number) => v.length >= min,

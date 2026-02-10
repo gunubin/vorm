@@ -2,31 +2,31 @@ import { describe, it, expect } from 'vitest';
 import { createField } from '../create-field.js';
 
 describe('createField (primitive)', () => {
-  it('vo が null の FieldSchema を返す', () => {
+  it('returns a FieldSchema with vo as null', () => {
     const field = createField<string>();
 
     expect(field.vo).toBeNull();
   });
 
-  it('required: true で FieldSchema を生成する', () => {
+  it('generates FieldSchema with required: true', () => {
     const field = createField<string>({ required: true });
 
     expect(field.required).toBe(true);
   });
 
-  it('required: false で FieldSchema を生成する', () => {
+  it('generates FieldSchema with required: false', () => {
     const field = createField<string>({ required: false });
 
     expect(field.required).toBe(false);
   });
 
-  it('required 省略時はデフォルトで false', () => {
+  it('defaults to required: false when omitted', () => {
     const field = createField<string>();
 
     expect(field.required).toBe(false);
   });
 
-  it('カスタムルールを設定できる', () => {
+  it('can set custom rules', () => {
     const field = createField<string>({
       rules: [
         { code: 'TOO_LONG', validate: (v) => v.length <= 100 },
@@ -37,20 +37,20 @@ describe('createField (primitive)', () => {
     expect(field.rules[0].code).toBe('TOO_LONG');
   });
 
-  it('Record 形式の messages を設定できる', () => {
+  it('can set messages in Record format', () => {
     const field = createField<string>({
       required: true,
       messages: {
-        REQUIRED: '名前を入力してください',
+        REQUIRED: 'Please enter a name',
       },
     });
 
     expect(field.messages).toEqual({
-      REQUIRED: '名前を入力してください',
+      REQUIRED: 'Please enter a name',
     });
   });
 
-  it('関数形式の messages を設定できる', () => {
+  it('can set messages in function format', () => {
     const messageFn = ({ code }: { code: string }) => `Error: ${code}`;
     const field = createField<string>({
       messages: messageFn,
@@ -59,7 +59,7 @@ describe('createField (primitive)', () => {
     expect(field.messages).toBe(messageFn);
   });
 
-  it('rules と messages 省略時はデフォルト値', () => {
+  it('uses default values when rules and messages are omitted', () => {
     const field = createField<string>();
 
     expect(field.rules).toEqual([]);

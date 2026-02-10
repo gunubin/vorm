@@ -12,91 +12,91 @@ const PasswordVO = vo('Password', [
 const passwordField = createField(PasswordVO);
 
 describe('validateField', () => {
-  describe('required チェック', () => {
-    const field = passwordField({ required: true, messages: { REQUIRED: '必須です' } });
+  describe('required check', () => {
+    const field = passwordField({ required: true, messages: { REQUIRED: 'Required' } });
 
-    it('空文字は REQUIRED エラー', () => {
+    it('empty string returns REQUIRED error', () => {
       const error = validateField('', field);
-      expect(error).toEqual({ code: 'REQUIRED', message: '必須です' });
+      expect(error).toEqual({ code: 'REQUIRED', message: 'Required' });
     });
 
-    it('undefined は REQUIRED エラー', () => {
+    it('undefined returns REQUIRED error', () => {
       const error = validateField(undefined, field);
-      expect(error).toEqual({ code: 'REQUIRED', message: '必須です' });
+      expect(error).toEqual({ code: 'REQUIRED', message: 'Required' });
     });
 
-    it('null は REQUIRED エラー', () => {
+    it('null returns REQUIRED error', () => {
       const error = validateField(null, field);
-      expect(error).toEqual({ code: 'REQUIRED', message: '必須です' });
+      expect(error).toEqual({ code: 'REQUIRED', message: 'Required' });
     });
   });
 
-  describe('required: false で空値', () => {
+  describe('empty value with required: false', () => {
     const field = passwordField({ required: false });
 
-    it('空文字はエラーなし（ルールスキップ）', () => {
+    it('empty string has no error (rules skipped)', () => {
       const error = validateField('', field);
       expect(error).toBeNull();
     });
 
-    it('undefined はエラーなし', () => {
+    it('undefined has no error', () => {
       const error = validateField(undefined, field);
       expect(error).toBeNull();
     });
 
-    it('null はエラーなし', () => {
+    it('null has no error', () => {
       const error = validateField(null, field);
       expect(error).toBeNull();
     });
   });
 
-  describe('VO ルール', () => {
+  describe('VO rules', () => {
     const field = passwordField({
       required: true,
       messages: {
-        REQUIRED: '必須です',
-        TOO_SHORT: '8文字以上',
-        NO_UPPERCASE: '大文字必須',
-        NO_NUMBER: '数字必須',
+        REQUIRED: 'Required',
+        TOO_SHORT: 'At least 8 characters',
+        NO_UPPERCASE: 'Must contain uppercase',
+        NO_NUMBER: 'Must contain number',
       },
     });
 
-    it('定義順に実行され、最初の失敗で停止する', () => {
+    it('runs in definition order and stops at first failure', () => {
       const error = validateField('short', field);
-      expect(error).toEqual({ code: 'TOO_SHORT', message: '8文字以上' });
+      expect(error).toEqual({ code: 'TOO_SHORT', message: 'At least 8 characters' });
     });
 
-    it('最初のルール通過後、次のルールで失敗する', () => {
+    it('fails at next rule after first passes', () => {
       const error = validateField('longpassword', field);
-      expect(error).toEqual({ code: 'NO_UPPERCASE', message: '大文字必須' });
+      expect(error).toEqual({ code: 'NO_UPPERCASE', message: 'Must contain uppercase' });
     });
 
-    it('全ルール通過で null', () => {
+    it('returns null when all rules pass', () => {
       const error = validateField('Password1', field);
       expect(error).toBeNull();
     });
   });
 
-  describe('プリミティブフィールドのカスタムルール', () => {
+  describe('custom rules for primitive fields', () => {
     const nameField = createField<string>({
       required: true,
       rules: [
         { code: 'TOO_LONG', validate: (v) => v.length <= 100 },
       ],
       messages: {
-        REQUIRED: '名前を入力してください',
-        TOO_LONG: '100文字以内で入力してください',
+        REQUIRED: 'Please enter a name',
+        TOO_LONG: 'Must be 100 characters or less',
       },
     });
 
-    it('カスタムルール通過', () => {
-      const error = validateField('テスト', nameField);
+    it('custom rule passes', () => {
+      const error = validateField('Test', nameField);
       expect(error).toBeNull();
     });
 
-    it('カスタムルール違反', () => {
+    it('custom rule violation', () => {
       const error = validateField('a'.repeat(101), nameField);
-      expect(error).toEqual({ code: 'TOO_LONG', message: '100文字以内で入力してください' });
+      expect(error).toEqual({ code: 'TOO_LONG', message: 'Must be 100 characters or less' });
     });
   });
 });

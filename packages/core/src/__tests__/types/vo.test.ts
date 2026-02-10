@@ -6,83 +6,83 @@ const strRule = createRule<string>('STR', (v) => v.length > 0);
 const numRule = createRule<number, number>('NUM', (v, min) => v >= min);
 
 // =============================================
-// vo() ジェネリック推論
+// vo() generic inference
 // =============================================
-describe('vo() ジェネリック推論', () => {
-  it('vo("Email", [strRule]) → VODefinition<string, "Email">: B はリテラル推論', () => {
+describe('vo() generic inference', () => {
+  it('vo("Email", [strRule]) → VODefinition<string, "Email">: B is literal inferred', () => {
     const Email = vo('Email', [strRule()]);
     expectTypeOf(Email).toEqualTypeOf<VODefinition<string, 'Email'>>();
     expectTypeOf(Email.brand).toEqualTypeOf<'Email'>();
   });
 
-  it('vo("Age", [numRule]) → VODefinition<number, "Age">: T は rules から推論', () => {
+  it('vo("Age", [numRule]) → VODefinition<number, "Age">: T is inferred from rules', () => {
     const Age = vo('Age', [numRule(0)]);
     expectTypeOf(Age).toEqualTypeOf<VODefinition<number, 'Age'>>();
   });
 
-  it('vo("Empty", []) → VODefinition<string, "Empty">: T は string にデフォルト', () => {
+  it('vo("Empty", []) → VODefinition<string, "Empty">: T defaults to string', () => {
     const Empty = vo('Empty', []);
     expectTypeOf(Empty).toEqualTypeOf<VODefinition<string, 'Empty'>>();
   });
 
-  it('vo<"Rating", number>("Rating", []) → 両方明示指定', () => {
+  it('vo<"Rating", number>("Rating", []) → both explicitly specified', () => {
     const Rating = vo<'Rating', number>('Rating', []);
     expectTypeOf(Rating).toEqualTypeOf<VODefinition<number, 'Rating'>>();
   });
 });
 
 // =============================================
-// create / safeCreate 返り値の型
+// create / safeCreate return types
 // =============================================
-describe('create / safeCreate の返り値', () => {
+describe('create / safeCreate return types', () => {
   const Email = vo('Email', [strRule()]);
   const Password = vo('Password', [strRule()]);
   const Age = vo('Age', [numRule(0)]);
 
-  it('create() は Brand<T, B> を返す', () => {
+  it('create() returns Brand<T, B>', () => {
     const email = Email.create('test@example.com');
     expectTypeOf(email).toEqualTypeOf<Brand<string, 'Email'>>();
   });
 
-  it('create() は Brand<number, "Age"> を返す（number VO）', () => {
+  it('create() returns Brand<number, "Age"> (number VO)', () => {
     const age = Age.create(25);
     expectTypeOf(age).toEqualTypeOf<Brand<number, 'Age'>>();
   });
 
-  it('safeCreate() は CreateResult<Brand<T, B>> を返す', () => {
+  it('safeCreate() returns CreateResult<Brand<T, B>>', () => {
     const result = Email.safeCreate('test@example.com');
     expectTypeOf(result).toEqualTypeOf<CreateResult<Brand<string, 'Email'>>>();
   });
 
-  it('safeCreate success の data はブランド型', () => {
+  it('safeCreate success data is branded type', () => {
     const result = Email.safeCreate('test@example.com');
     if (result.success) {
       expectTypeOf(result.data).toEqualTypeOf<Brand<string, 'Email'>>();
     }
   });
 
-  it('異なる VO の create 結果は互いに代入不可', () => {
+  it('create results of different VOs are not assignable to each other', () => {
     type EmailBrand = ReturnType<typeof Email.create>;
     type PasswordBrand = ReturnType<typeof Password.create>;
     expectTypeOf<EmailBrand>().not.toEqualTypeOf<PasswordBrand>();
     expectTypeOf<PasswordBrand>().not.toEqualTypeOf<EmailBrand>();
   });
 
-  it('create 結果は基底型に代入可能', () => {
+  it('create result is assignable to base type', () => {
     type EmailBrand = ReturnType<typeof Email.create>;
     type AgeBrand = ReturnType<typeof Age.create>;
     expectTypeOf<EmailBrand>().toMatchTypeOf<string>();
     expectTypeOf<AgeBrand>().toMatchTypeOf<number>();
   });
 
-  it('基底型は create 結果に代入不可', () => {
+  it('base type is not assignable to create result', () => {
     type EmailBrand = ReturnType<typeof Email.create>;
     expectTypeOf<string>().not.toMatchTypeOf<EmailBrand>();
   });
 });
 
 // =============================================
-// Infer ユーティリティ型
+// Infer utility type
 // =============================================
 describe('Infer', () => {
   const Email = vo('Email', [strRule()]);
@@ -99,19 +99,19 @@ describe('Infer', () => {
     expectTypeOf<AgeType>().toEqualTypeOf<Brand<number, 'Age'>>();
   });
 
-  it('Infer<空ルール VO> → Brand<string, B>', () => {
+  it('Infer<empty rules VO> → Brand<string, B>', () => {
     type EmptyType = Infer<typeof Empty>;
     expectTypeOf<EmptyType>().toEqualTypeOf<Brand<string, 'Empty'>>();
   });
 
-  it('異なる VO の Infer 型は互いに代入不可', () => {
+  it('Infer types of different VOs are not assignable to each other', () => {
     const Password = vo('Password', [strRule()]);
     type EmailType = Infer<typeof Email>;
     type PasswordType = Infer<typeof Password>;
     expectTypeOf<EmailType>().not.toEqualTypeOf<PasswordType>();
   });
 
-  it('手書き VO の Infer は create の返り値型を抽出', () => {
+  it('Infer of hand-written VO extracts create return type', () => {
     type Nickname = string & { readonly __brand: 'Nickname' };
     const NicknameDef = {
       rules: [strRule()],
@@ -123,15 +123,15 @@ describe('Infer', () => {
 });
 
 // =============================================
-// VOLike 構造的互換性
+// VOLike structural compatibility
 // =============================================
 describe('VOLike', () => {
-  it('VODefinition は VOLike に代入可能', () => {
+  it('VODefinition is assignable to VOLike', () => {
     const Email = vo('Email', [strRule()]);
     expectTypeOf(Email).toMatchTypeOf<VOLike<string, Brand<string, 'Email'>>>();
   });
 
-  it('手書き VO は VOLike に代入可能', () => {
+  it('hand-written VO is assignable to VOLike', () => {
     type Nickname = string & { readonly __brand: 'Nickname' };
     const NicknameDef = {
       rules: [strRule()],
@@ -140,7 +140,7 @@ describe('VOLike', () => {
     expectTypeOf(NicknameDef).toMatchTypeOf<VOLike<string, Nickname>>();
   });
 
-  it('createField は VOLike を受け入れる', () => {
+  it('createField accepts VOLike', () => {
     type Nickname = string & { readonly __brand: 'Nickname' };
     const NicknameDef: VOLike<string, Nickname> = {
       rules: [strRule()],
@@ -153,9 +153,9 @@ describe('VOLike', () => {
 });
 
 // =============================================
-// 手書き VO → createField → createFormSchema のブランド保持
+// Hand-written VO → createField → createFormSchema brand preservation
 // =============================================
-describe('手書き VO のブランド型フロー', () => {
+describe('hand-written VO brand type flow', () => {
   type Nickname = string & { readonly __brand: 'Nickname' };
   const rules = [strRule()];
   const NicknameDef = {
@@ -170,27 +170,27 @@ describe('手書き VO のブランド型フロー', () => {
     },
   });
 
-  it('FormOutputValues のフィールドが手書きブランド型になる', () => {
+  it('FormOutputValues field becomes hand-written brand type', () => {
     type Output = import('../../types.js').FormOutputValues<typeof schema.fields>;
     expectTypeOf<Output['nickname']>().toEqualTypeOf<Nickname>();
   });
 
-  it('FormInputValues は基底型（string）', () => {
+  it('FormInputValues is base type (string)', () => {
     type Input = import('../../types.js').FormInputValues<typeof schema.fields>;
     expectTypeOf<Input['nickname']>().toEqualTypeOf<string>();
   });
 });
 
 // =============================================
-// validateAndCreate / safeValidateAndCreate の型
+// validateAndCreate / safeValidateAndCreate types
 // =============================================
 describe('validateAndCreate / safeValidateAndCreate', () => {
-  it('validateAndCreate は入力と同じ型を返す', () => {
+  it('validateAndCreate returns the same type as input', () => {
     const result = validateAndCreate('test', [strRule()], 'Test');
     expectTypeOf(result).toEqualTypeOf<string>();
   });
 
-  it('safeValidateAndCreate は success/failure を判別できる', () => {
+  it('safeValidateAndCreate can discriminate success/failure', () => {
     const result = safeValidateAndCreate('test', [strRule()]);
     if (result.success) {
       expectTypeOf(result.data).toEqualTypeOf<string>();
@@ -199,7 +199,7 @@ describe('validateAndCreate / safeValidateAndCreate', () => {
     }
   });
 
-  it('number の validateAndCreate', () => {
+  it('number validateAndCreate', () => {
     const result = validateAndCreate(42, [numRule(0)], 'Score');
     expectTypeOf(result).toEqualTypeOf<number>();
   });

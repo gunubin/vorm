@@ -16,21 +16,21 @@ const emailField = createField(EmailVO);
 const passwordField = createField(PasswordVO);
 
 describe('validateForm', () => {
-  it('全フィールドのルール実行とエラー集約', () => {
+  it('runs rules on all fields and aggregates errors', () => {
     const schema = createFormSchema({
       fields: {
-        email: emailField({ required: true, messages: { REQUIRED: 'メール必須' } }),
-        password: passwordField({ required: true, messages: { REQUIRED: 'パスワード必須' } }),
+        email: emailField({ required: true, messages: { REQUIRED: 'Email is required' } }),
+        password: passwordField({ required: true, messages: { REQUIRED: 'Password is required' } }),
       },
     });
 
     const errors = validateForm({ email: '', password: '' }, schema);
 
-    expect(errors.email).toEqual({ code: 'REQUIRED', message: 'メール必須' });
-    expect(errors.password).toEqual({ code: 'REQUIRED', message: 'パスワード必須' });
+    expect(errors.email).toEqual({ code: 'REQUIRED', message: 'Email is required' });
+    expect(errors.password).toEqual({ code: 'REQUIRED', message: 'Password is required' });
   });
 
-  it('バリデーション通過時は空オブジェクト', () => {
+  it('returns empty object when validation passes', () => {
     const schema = createFormSchema({
       fields: {
         email: emailField({ required: true }),
@@ -55,14 +55,14 @@ describe('validateForm', () => {
       resolver: (values) => {
         if (values.password !== values.confirmPassword) {
           return {
-            confirmPassword: { code: 'MISMATCH', message: 'パスワードが一致しません' },
+            confirmPassword: { code: 'MISMATCH', message: 'Passwords do not match' },
           };
         }
         return null;
       },
     });
 
-    it('全ルール通過後に resolver を実行する', () => {
+    it('runs resolver after all rules pass', () => {
       const errors = validateForm(
         { password: 'Password1', confirmPassword: 'Different1' },
         signupSchema,
@@ -70,11 +70,11 @@ describe('validateForm', () => {
 
       expect(errors.confirmPassword).toEqual({
         code: 'MISMATCH',
-        message: 'パスワードが一致しません',
+        message: 'Passwords do not match',
       });
     });
 
-    it('resolver が null を返す場合はエラーなし', () => {
+    it('no error when resolver returns null', () => {
       const errors = validateForm(
         { password: 'Password1', confirmPassword: 'Password1' },
         signupSchema,
@@ -83,7 +83,7 @@ describe('validateForm', () => {
       expect(errors).toEqual({});
     });
 
-    it('フィールドエラーがある場合 resolver はスキップされる', () => {
+    it('skips resolver when field errors exist', () => {
       let resolverCalled = false;
       const schema = createFormSchema({
         fields: {
@@ -101,45 +101,45 @@ describe('validateForm', () => {
     });
   });
 
-  it('パスワード確認の統合例', () => {
+  it('password confirmation integration example', () => {
     const schema = createFormSchema({
       fields: {
         password: passwordField({
           required: true,
           messages: {
-            REQUIRED: 'パスワードを入力してください',
-            TOO_SHORT: '8文字以上で入力してください',
+            REQUIRED: 'Please enter a password',
+            TOO_SHORT: 'Must be at least 8 characters',
           },
         }),
         confirmPassword: createField<string>({
           required: true,
-          messages: { REQUIRED: '確認パスワードを入力してください' },
+          messages: { REQUIRED: 'Please enter confirmation password' },
         }),
       },
       resolver: (values) => {
         if (values.password !== values.confirmPassword) {
           return {
-            confirmPassword: { code: 'MISMATCH', message: 'パスワードが一致しません' },
+            confirmPassword: { code: 'MISMATCH', message: 'Passwords do not match' },
           };
         }
         return null;
       },
     });
 
-    // 全空
+    // all empty
     const errors1 = validateForm({ password: '', confirmPassword: '' }, schema);
-    expect(errors1.password).toEqual({ code: 'REQUIRED', message: 'パスワードを入力してください' });
-    expect(errors1.confirmPassword).toEqual({ code: 'REQUIRED', message: '確認パスワードを入力してください' });
+    expect(errors1.password).toEqual({ code: 'REQUIRED', message: 'Please enter a password' });
+    expect(errors1.confirmPassword).toEqual({ code: 'REQUIRED', message: 'Please enter confirmation password' });
 
-    // パスワードが短い
+    // password too short
     const errors2 = validateForm({ password: 'short', confirmPassword: 'short' }, schema);
-    expect(errors2.password).toEqual({ code: 'TOO_SHORT', message: '8文字以上で入力してください' });
+    expect(errors2.password).toEqual({ code: 'TOO_SHORT', message: 'Must be at least 8 characters' });
 
-    // 不一致
+    // mismatch
     const errors3 = validateForm({ password: 'Password1', confirmPassword: 'Different1' }, schema);
-    expect(errors3.confirmPassword).toEqual({ code: 'MISMATCH', message: 'パスワードが一致しません' });
+    expect(errors3.confirmPassword).toEqual({ code: 'MISMATCH', message: 'Passwords do not match' });
 
-    // 正常
+    // valid
     const errors4 = validateForm({ password: 'Password1', confirmPassword: 'Password1' }, schema);
     expect(errors4).toEqual({});
   });

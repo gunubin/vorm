@@ -1,7 +1,9 @@
-import type { FormSchema, FieldSchema, FormErrors, FormInputValues } from './types.js';
+import type { FormSchema, FieldSchema, FormErrors, FormInputValues, AnyFieldSchema } from './types.js';
+import { isArrayFieldSchema } from './types.js';
 import { validateField } from './validate-field.js';
+import { validateArrayField } from './validate-array-field.js';
 
-export function validateForm<TFields extends Record<string, FieldSchema<any, any, boolean, any>>>(
+export function validateForm<TFields extends Record<string, AnyFieldSchema>>(
   values: FormInputValues<TFields>,
   schema: FormSchema<TFields>,
 ): FormErrors {
@@ -10,9 +12,18 @@ export function validateForm<TFields extends Record<string, FieldSchema<any, any
   for (const [name, fieldSchema] of Object.entries(schema.fields)) {
     const value = (values as Record<string, unknown>)[name];
     const formMessages = schema.messages?.[name];
-    const error = validateField(value, fieldSchema as FieldSchema<any, any, boolean, any>, formMessages);
-    if (error) {
-      errors[name] = error;
+
+    if (isArrayFieldSchema(fieldSchema)) {
+      const arrayErrors = validateArrayField(value as unknown[] | undefined | null, fieldSchema, formMessages);
+      for (const [suffix, error] of Object.entries(arrayErrors)) {
+        const key = suffix === '' ? name : `${name}${suffix}`;
+        errors[key] = error;
+      }
+    } else {
+      const error = validateField(value, fieldSchema as FieldSchema<any, any, boolean, any>, formMessages);
+      if (error) {
+        errors[name] = error;
+      }
     }
   }
 

@@ -1,8 +1,15 @@
 {
   "name": "@gunubin/vorm-rhf",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Thin React Hook Form resolver adapter for @gunubin/vorm-core — branded type output with zero API wrapping",
-  "keywords": ["form", "react-hook-form", "validation", "branded-types", "typescript", "resolver"],
+  "keywords": [
+    "form",
+    "react-hook-form",
+    "validation",
+    "branded-types",
+    "typescript",
+    "resolver"
+  ],
   "license": "MIT",
   "author": "gunubin",
   "repository": {
@@ -26,7 +33,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",

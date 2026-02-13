@@ -1,8 +1,15 @@
 {
   "name": "@gunubin/vorm-react",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "VO-first React form hooks with per-field subscriptions via useSyncExternalStore",
-  "keywords": ["form", "react", "hooks", "validation", "branded-types", "typescript"],
+  "keywords": [
+    "form",
+    "react",
+    "hooks",
+    "validation",
+    "branded-types",
+    "typescript"
+  ],
   "license": "MIT",
   "author": "gunubin",
   "repository": {
@@ -26,7 +33,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",

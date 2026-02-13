@@ -1,8 +1,14 @@
 {
   "name": "@gunubin/vorm-core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Branded value object definitions with type-safe validation rules",
-  "keywords": ["form", "validation", "value-object", "branded-types", "typescript"],
+  "keywords": [
+    "form",
+    "validation",
+    "value-object",
+    "branded-types",
+    "typescript"
+  ],
   "license": "MIT",
   "author": "gunubin",
   "repository": {
@@ -26,7 +32,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",

@@ -1,8 +1,13 @@
 {
   "name": "@gunubin/vorm-form",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Field schemas, form validation, and output building for vorm",
-  "keywords": ["form", "validation", "field-schema", "typescript"],
+  "keywords": [
+    "form",
+    "validation",
+    "field-schema",
+    "typescript"
+  ],
   "license": "MIT",
   "author": "gunubin",
   "repository": {
@@ -26,7 +31,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",

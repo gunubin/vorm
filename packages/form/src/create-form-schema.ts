@@ -1,9 +1,41 @@
 import type { StandardSchemaV1 } from '@gunubin/vorm-core';
-import type { FieldSchema, FormSchema, FormSchemaConfig, FormInputValues, FormOutputValues } from './types.js';
+import type { AnyFieldSchema, FormSchema, FormSchemaConfig, FormInputValues, FormOutputValues } from './types.js';
 import { validateForm } from './validate-form.js';
 import { buildOutputValues } from './build-output-values.js';
 
-export function createFormSchema<TFields extends Record<string, FieldSchema<any, any, boolean, any>>>(
+export function parseFieldPath(key: string): (string | number)[] {
+  const result: (string | number)[] = [];
+  let i = 0;
+  let current = '';
+
+  while (i < key.length) {
+    if (key[i] === '[') {
+      if (current) {
+        result.push(current);
+        current = '';
+      }
+      i++;
+      let num = '';
+      while (i < key.length && key[i] !== ']') {
+        num += key[i];
+        i++;
+      }
+      result.push(Number(num));
+      i++; // skip ']'
+    } else {
+      current += key[i];
+      i++;
+    }
+  }
+
+  if (current) {
+    result.push(current);
+  }
+
+  return result;
+}
+
+export function createFormSchema<TFields extends Record<string, AnyFieldSchema>>(
   config: FormSchemaConfig<TFields>,
 ): FormSchema<TFields> {
   const schema: FormSchema<TFields> = {
@@ -24,7 +56,7 @@ export function createFormSchema<TFields extends Record<string, FieldSchema<any,
           const issues: StandardSchemaV1.Issue[] = errorEntries.map(
             ([field, error]) => ({
               message: error.message || error.code,
-              path: [field],
+              path: parseFieldPath(field),
             }),
           );
           return { issues };

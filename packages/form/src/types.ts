@@ -13,6 +13,23 @@ export type FieldSchema<T, TOutput, TRequired extends boolean, TCodes extends st
   format?: (value: T) => string;
 };
 
+export type ArrayFieldSchema<T, TOutput, TRequired extends boolean, TCodes extends string = string> = {
+  __array: true;
+  item: FieldSchema<T, TOutput, true, TCodes>;
+  required: TRequired;
+  minLength?: number;
+  maxLength?: number;
+  messages: ErrorMessages<TCodes | 'REQUIRED' | 'MIN_LENGTH' | 'MAX_LENGTH'>;
+};
+
+export type AnyFieldSchema =
+  | FieldSchema<any, any, boolean, any>
+  | ArrayFieldSchema<any, any, boolean, any>;
+
+export function isArrayFieldSchema(s: AnyFieldSchema): s is ArrayFieldSchema<any, any, boolean, any> {
+  return '__array' in s && s.__array === true;
+}
+
 export type FieldError = {
   code: string;
   message: string;
@@ -20,31 +37,39 @@ export type FieldError = {
 
 export type FormErrors = Record<string, FieldError>;
 
-export type FormSchemaConfig<TFields extends Record<string, FieldSchema<any, any, boolean, any>>> = {
+export type FormSchemaConfig<TFields extends Record<string, AnyFieldSchema>> = {
   fields: TFields;
   messages?: Record<string, ErrorMessages>;
   resolver?: (values: FormInputValues<TFields>) => FormErrors | null;
 };
 
-export type FormSchema<TFields extends Record<string, FieldSchema<any, any, boolean, any>>> =
+export type FormSchema<TFields extends Record<string, AnyFieldSchema>> =
   StandardSchemaV1<FormInputValues<TFields>, FormOutputValues<TFields>> & {
     fields: TFields;
     messages?: Record<string, ErrorMessages>;
     resolver?: (values: FormInputValues<TFields>) => FormErrors | null;
   };
 
-export type FormInputValues<TFields extends Record<string, FieldSchema<any, any, boolean, any>>> = {
-  [K in keyof TFields]: TFields[K] extends FieldSchema<infer TInput, any, infer TRequired, any>
+export type FormInputValues<TFields extends Record<string, AnyFieldSchema>> = {
+  [K in keyof TFields]: TFields[K] extends ArrayFieldSchema<infer TInput, any, infer TRequired, any>
     ? TRequired extends true
-      ? TInput
-      : TInput | undefined
-    : never;
+      ? TInput[]
+      : TInput[] | undefined
+    : TFields[K] extends FieldSchema<infer TInput, any, infer TRequired, any>
+      ? TRequired extends true
+        ? TInput
+        : TInput | undefined
+      : never;
 };
 
-export type FormOutputValues<TFields extends Record<string, FieldSchema<any, any, boolean, any>>> = {
-  [K in keyof TFields]: TFields[K] extends FieldSchema<any, infer TOutput, infer TRequired, any>
+export type FormOutputValues<TFields extends Record<string, AnyFieldSchema>> = {
+  [K in keyof TFields]: TFields[K] extends ArrayFieldSchema<any, infer TOutput, infer TRequired, any>
     ? TRequired extends true
-      ? TOutput
-      : TOutput | undefined
-    : never;
+      ? TOutput[]
+      : TOutput[] | undefined
+    : TFields[K] extends FieldSchema<any, infer TOutput, infer TRequired, any>
+      ? TRequired extends true
+        ? TOutput
+        : TOutput | undefined
+      : never;
 };

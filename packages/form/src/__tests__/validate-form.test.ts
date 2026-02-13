@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { vo } from '@gunubin/vorm-core';
 import { createField } from '../create-field.js';
+import { createArrayField } from '../create-array-field.js';
 import { createFormSchema } from '../create-form-schema.js';
 import { validateForm } from '../validate-form.js';
 
@@ -98,6 +99,72 @@ describe('validateForm', () => {
 
       validateForm({ password: '', confirmPassword: '' }, schema);
       expect(resolverCalled).toBe(false);
+    });
+  });
+
+  describe('array field', () => {
+    const TagVO = vo('Tag', [
+      { code: 'TOO_SHORT', validate: (v: string) => v.length >= 2 },
+    ]);
+
+    it('validates required array field', () => {
+      const schema = createFormSchema({
+        fields: {
+          name: createField<string>()({ required: true }),
+          tags: createArrayField(TagVO)({ required: true }),
+        },
+      });
+
+      const errors = validateForm({ name: 'test', tags: [] }, schema);
+      expect(errors.tags).toEqual({ code: 'REQUIRED', message: 'This field is required' });
+    });
+
+    it('validates per-item errors with bracket notation keys', () => {
+      const schema = createFormSchema({
+        fields: {
+          tags: createArrayField(TagVO)({ required: true }),
+        },
+      });
+
+      const errors = validateForm({ tags: ['ab', 'x'] }, schema);
+      expect(errors['tags[1]']).toEqual({ code: 'TOO_SHORT', message: 'TOO_SHORT' });
+      expect(errors['tags[0]']).toBeUndefined();
+      expect(errors.tags).toBeUndefined();
+    });
+
+    it('validates minLength on array field', () => {
+      const schema = createFormSchema({
+        fields: {
+          tags: createArrayField(TagVO)({ required: true, minLength: 2 }),
+        },
+      });
+
+      const errors = validateForm({ tags: ['ab'] }, schema);
+      expect(errors.tags).toEqual({ code: 'MIN_LENGTH', message: 'MIN_LENGTH' });
+    });
+
+    it('mixes scalar and array field validation', () => {
+      const schema = createFormSchema({
+        fields: {
+          name: createField<string>()({ required: true }),
+          tags: createArrayField(TagVO)({ required: true }),
+        },
+      });
+
+      const errors = validateForm({ name: '', tags: [] }, schema);
+      expect(errors.name).toEqual({ code: 'REQUIRED', message: 'This field is required' });
+      expect(errors.tags).toEqual({ code: 'REQUIRED', message: 'This field is required' });
+    });
+
+    it('returns empty when array field is valid', () => {
+      const schema = createFormSchema({
+        fields: {
+          tags: createArrayField(TagVO)({ required: true }),
+        },
+      });
+
+      const errors = validateForm({ tags: ['ab', 'cd'] }, schema);
+      expect(errors).toEqual({});
     });
   });
 

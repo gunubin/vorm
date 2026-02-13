@@ -1,8 +1,14 @@
 {
   "name": "@gunubin/vorm-zod",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Zod schema adapter for vorm — convert Zod checks to validation rules",
-  "keywords": ["form", "zod", "validation", "adapter", "typescript"],
+  "keywords": [
+    "form",
+    "zod",
+    "validation",
+    "adapter",
+    "typescript"
+  ],
   "license": "MIT",
   "author": "gunubin",
   "repository": {
@@ -26,7 +32,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",

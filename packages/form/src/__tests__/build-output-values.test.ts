@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { vo } from '@gunubin/vorm-core';
 import { buildOutputValues } from '../build-output-values.js';
 import { createField } from '../create-field.js';
+import { createArrayField } from '../create-array-field.js';
 
 const Price = vo('Price', [
   { code: 'POSITIVE', validate: (v: number) => v > 0 },
@@ -74,5 +75,54 @@ describe('buildOutputValues', () => {
 
     const result = buildOutputValues({ age: '' }, { age: field });
     expect(result.age).toBe(undefined);
+  });
+
+  describe('array field', () => {
+    const TagVO = vo('Tag', [
+      { code: 'TOO_SHORT', validate: (v: string) => v.length >= 2 },
+    ]);
+
+    it('applies vo.create to each item in array', () => {
+      const field = createArrayField(TagVO)({ required: true });
+      const result = buildOutputValues({ tags: ['ab', 'cd'] }, { tags: field });
+
+      expect(result.tags).toEqual(['ab', 'cd']);
+    });
+
+    it('returns shallow copy for primitive array (no VO)', () => {
+      const field = createArrayField<string>()({ required: true });
+      const original = ['hello', 'world'];
+      const result = buildOutputValues({ labels: original }, { labels: field });
+
+      expect(result.labels).toEqual(['hello', 'world']);
+      expect(result.labels).not.toBe(original);
+    });
+
+    it('returns undefined for empty array', () => {
+      const field = createArrayField(TagVO)({ required: true });
+      const result = buildOutputValues({ tags: [] }, { tags: field });
+
+      expect(result.tags).toBe(undefined);
+    });
+
+    it('returns undefined for undefined array', () => {
+      const field = createArrayField(TagVO)();
+      const result = buildOutputValues({ tags: undefined }, { tags: field });
+
+      expect(result.tags).toBe(undefined);
+    });
+
+    it('mixes scalar and array fields', () => {
+      const nameField = createField<string>()({ required: true });
+      const tagField = createArrayField(TagVO)({ required: true });
+
+      const result = buildOutputValues(
+        { name: 'hello', tags: ['ab', 'cd'] },
+        { name: nameField, tags: tagField },
+      );
+
+      expect(result.name).toBe('hello');
+      expect(result.tags).toEqual(['ab', 'cd']);
+    });
   });
 });

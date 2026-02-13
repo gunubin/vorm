@@ -16,3 +16,4 @@ export { validateField } from './validate-field.js';
 export { validateForm } from './validate-form.js';
 export { buildOutputValues } from './build-output-values.js';
 export { resolveMessage } from './resolve-message.js';
+export { formToStandardSchema } from './standard-schema.js';

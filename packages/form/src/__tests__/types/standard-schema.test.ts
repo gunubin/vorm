@@ -1,7 +1,7 @@
 import { expectTypeOf } from 'vitest';
 import { vo } from '@gunubin/vorm-core';
 import type { Brand, StandardSchemaV1 } from '@gunubin/vorm-core';
-import { createField, createFormSchema, formToStandardSchema } from '../../index.js';
+import { createField, createFormSchema } from '../../index.js';
 
 const EmailVO = vo('Email', [
   { code: 'INVALID_FORMAT', validate: (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
@@ -21,17 +21,15 @@ const loginSchema = createFormSchema({
 type Email = Brand<string, 'Email'>;
 type Password = Brand<string, 'Password'>;
 
-describe('formToStandardSchema type tests', () => {
-  const schema = formToStandardSchema(loginSchema);
-
-  it('returns StandardSchemaV1<FormInputValues, FormOutputValues>', () => {
-    expectTypeOf(schema).toMatchTypeOf<
+describe('FormSchema is StandardSchemaV1', () => {
+  it('createFormSchema result is assignable to StandardSchemaV1', () => {
+    expectTypeOf(loginSchema).toMatchTypeOf<
       StandardSchemaV1<{ email: string; password: string }, { email: Email; password: Password }>
     >();
   });
 
-  it('~standard.validate accepts FormInputValues and returns Result<FormOutputValues>', () => {
-    type ValidateFn = typeof schema['~standard']['validate'];
+  it('~standard.validate returns Result<FormOutputValues>', () => {
+    type ValidateFn = typeof loginSchema['~standard']['validate'];
     type ResultOutput = Extract<ReturnType<ValidateFn>, { value: unknown }>['value'];
     expectTypeOf<ResultOutput>().toEqualTypeOf<{ email: Email; password: Password }>();
   });

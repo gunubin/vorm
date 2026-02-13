@@ -1,4 +1,4 @@
-import type { VOLike, ValidationRule } from '@gunubin/vorm-core';
+import type { VOLike, ValidationRule, StandardSchemaV1 } from '@gunubin/vorm-core';
 
 export type ErrorMessageMap<C extends string = string> = { [K in C]?: string };
 export type ErrorMessageFn<C extends string = string> = (error: { code: C }) => string;
@@ -26,11 +26,12 @@ export type FormSchemaConfig<TFields extends Record<string, FieldSchema<any, any
   resolver?: (values: FormInputValues<TFields>) => FormErrors | null;
 };
 
-export type FormSchema<TFields extends Record<string, FieldSchema<any, any, boolean, any>>> = {
-  fields: TFields;
-  messages?: Record<string, ErrorMessages>;
-  resolver?: (values: FormInputValues<TFields>) => FormErrors | null;
-};
+export type FormSchema<TFields extends Record<string, FieldSchema<any, any, boolean, any>>> =
+  StandardSchemaV1<FormInputValues<TFields>, FormOutputValues<TFields>> & {
+    fields: TFields;
+    messages?: Record<string, ErrorMessages>;
+    resolver?: (values: FormInputValues<TFields>) => FormErrors | null;
+  };
 
 export type FormInputValues<TFields extends Record<string, FieldSchema<any, any, boolean, any>>> = {
   [K in keyof TFields]: TFields[K] extends FieldSchema<infer TInput, any, infer TRequired, any>

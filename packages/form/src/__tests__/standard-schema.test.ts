@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { vo } from '@gunubin/vorm-core';
 import { createField } from '../create-field.js';
 import { createFormSchema } from '../create-form-schema.js';
-import { formToStandardSchema } from '../standard-schema.js';
 
 const EmailVO = vo('Email', [
   { code: 'INVALID_FORMAT', validate: (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
@@ -28,16 +27,14 @@ const loginSchema = createFormSchema({
   },
 });
 
-describe('formToStandardSchema', () => {
-  const schema = formToStandardSchema(loginSchema);
-
-  it('returns ~standard with version 1 and vendor "vorm"', () => {
-    expect(schema['~standard'].version).toBe(1);
-    expect(schema['~standard'].vendor).toBe('vorm');
+describe('FormSchema as Standard Schema v1', () => {
+  it('has ~standard with version 1 and vendor "vorm"', () => {
+    expect(loginSchema['~standard'].version).toBe(1);
+    expect(loginSchema['~standard'].vendor).toBe('vorm');
   });
 
   it('returns value on valid input', () => {
-    const result = schema['~standard'].validate({
+    const result = loginSchema['~standard'].validate({
       email: 'test@example.com',
       password: 'Password1',
     });
@@ -48,7 +45,7 @@ describe('formToStandardSchema', () => {
   });
 
   it('returns issues with field path on validation failure', () => {
-    const result = schema['~standard'].validate({
+    const result = loginSchema['~standard'].validate({
       email: '',
       password: '',
     });
@@ -67,7 +64,7 @@ describe('formToStandardSchema', () => {
   });
 
   it('returns issues for specific field errors', () => {
-    const result = schema['~standard'].validate({
+    const result = loginSchema['~standard'].validate({
       email: 'invalid',
       password: 'short',
     });
@@ -84,22 +81,8 @@ describe('formToStandardSchema', () => {
     }
   });
 
-  it('returns branded output values on success', () => {
-    const result = schema['~standard'].validate({
-      email: 'test@example.com',
-      password: 'Password1',
-    });
-    expect('value' in result).toBe(true);
-    if ('value' in result) {
-      expect(result.value).toEqual({
-        email: 'test@example.com',
-        password: 'Password1',
-      });
-    }
-  });
-
   it('partial failure returns only failing fields', () => {
-    const result = schema['~standard'].validate({
+    const result = loginSchema['~standard'].validate({
       email: 'test@example.com',
       password: '',
     });

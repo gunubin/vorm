@@ -9,5 +9,4 @@ export type {
 export { vo, VOValidationError } from './vo.js';
 export { createRule } from './create-rule.js';
 export { validateAndCreate, safeValidateAndCreate } from './validate-and-create.js';
-export { toStandardSchema } from './standard-schema.js';
 export type { StandardSchemaV1 } from './standard-schema.js';

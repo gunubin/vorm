@@ -1,5 +1,3 @@
-import type { Brand, VODefinition } from './types.js';
-
 // Standard Schema v1 interface (inlined to maintain zero-dependency)
 // See: https://github.com/standard-schema/standard-schema
 
@@ -49,31 +47,4 @@ export declare namespace StandardSchemaV1 {
   type InferOutput<Schema extends StandardSchemaV1> = NonNullable<
     Schema['~standard']['types']
   >['output'];
-}
-
-/**
- * Wraps a VODefinition as a Standard Schema v1 compliant object.
- */
-export function toStandardSchema<TInput, TBrand extends string, TCodes extends string>(
-  voDef: VODefinition<TInput, TBrand, TCodes>,
-): StandardSchemaV1<TInput, Brand<TInput, TBrand>> {
-  return {
-    '~standard': {
-      version: 1,
-      vendor: 'vorm',
-      validate(value: unknown): StandardSchemaV1.Result<Brand<TInput, TBrand>> {
-        const issues: StandardSchemaV1.Issue[] = [];
-        for (const rule of voDef.rules) {
-          if (!rule.validate(value as TInput)) {
-            issues.push({ message: rule.code });
-          }
-        }
-        if (issues.length > 0) {
-          return { issues };
-        }
-        return { value: value as Brand<TInput, TBrand> };
-      },
-      types: undefined as unknown as StandardSchemaV1.Types<TInput, Brand<TInput, TBrand>>,
-    },
-  };
 }

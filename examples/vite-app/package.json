@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@gunubin/vorm-core": "workspace:*",
+    "@gunubin/vorm-form": "workspace:*",
     "@gunubin/vorm-react": "workspace:*",
     "@gunubin/vorm-rhf": "workspace:*",
     "@gunubin/vorm-zod": "workspace:*",

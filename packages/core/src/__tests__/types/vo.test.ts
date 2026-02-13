@@ -1,5 +1,5 @@
 import { expectTypeOf } from 'vitest';
-import { vo, createRule, createField, createFormSchema, validateAndCreate, safeValidateAndCreate } from '../../index.js';
+import { vo, createRule, validateAndCreate, safeValidateAndCreate } from '../../index.js';
 import type { Brand, VODefinition, VOLike, CreateResult, Infer } from '../../index.js';
 
 const strRule = createRule<string>('STR', (v) => v.length > 0);
@@ -140,45 +140,6 @@ describe('VOLike', () => {
     expectTypeOf(NicknameDef).toMatchTypeOf<VOLike<string, Nickname>>();
   });
 
-  it('createField accepts VOLike', () => {
-    type Nickname = string & { readonly __brand: 'Nickname' };
-    const NicknameDef: VOLike<string, Nickname> = {
-      rules: [strRule()],
-      create: (v: string): Nickname => v as Nickname,
-    };
-    const nicknameField = createField(NicknameDef);
-    const field = nicknameField({ required: true });
-    expectTypeOf(field.required).toEqualTypeOf<true>();
-  });
-});
-
-// =============================================
-// Hand-written VO → createField → createFormSchema brand preservation
-// =============================================
-describe('hand-written VO brand type flow', () => {
-  type Nickname = string & { readonly __brand: 'Nickname' };
-  const rules = [strRule()];
-  const NicknameDef = {
-    rules,
-    create: (v: string): Nickname => validateAndCreate(v, rules, 'Nickname') as Nickname,
-  };
-
-  const nicknameField = createField(NicknameDef);
-  const schema = createFormSchema({
-    fields: {
-      nickname: nicknameField({ required: true }),
-    },
-  });
-
-  it('FormOutputValues field becomes hand-written brand type', () => {
-    type Output = import('../../types.js').FormOutputValues<typeof schema.fields>;
-    expectTypeOf<Output['nickname']>().toEqualTypeOf<Nickname>();
-  });
-
-  it('FormInputValues is base type (string)', () => {
-    type Input = import('../../types.js').FormInputValues<typeof schema.fields>;
-    expectTypeOf<Input['nickname']>().toEqualTypeOf<string>();
-  });
 });
 
 // =============================================

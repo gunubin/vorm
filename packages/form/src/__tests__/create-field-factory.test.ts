@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { vo } from '../vo.js';
+import { vo } from '@gunubin/vorm-core';
 import { createField } from '../create-field.js';
 
 const PasswordVO = vo('Password', [

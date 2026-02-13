@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: true,
   outDir: 'dist',
-  external: ['react', '@gunubin/vorm-core', '@gunubin/vorm-form'],
+  external: ['@gunubin/vorm-core'],
 });

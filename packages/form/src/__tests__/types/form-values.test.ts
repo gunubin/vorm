@@ -1,8 +1,9 @@
 import { expectTypeOf } from 'vitest';
-import { vo } from '../../vo.js';
+import { vo } from '@gunubin/vorm-core';
+import type { Brand } from '@gunubin/vorm-core';
 import { createField } from '../../create-field.js';
 import { createFormSchema } from '../../create-form-schema.js';
-import type { Brand, FormInputValues, FormOutputValues } from '../../types.js';
+import type { FormInputValues, FormOutputValues } from '../../types.js';
 
 type Email = Brand<string, 'Email'>;
 type Password = Brand<string, 'Password'>;

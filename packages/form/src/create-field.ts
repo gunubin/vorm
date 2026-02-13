@@ -1,4 +1,5 @@
-import type { VOLike, FieldSchema, ErrorMessages, ValidationRule } from './types.js';
+import type { VOLike, ValidationRule } from '@gunubin/vorm-core';
+import type { FieldSchema, ErrorMessages } from './types.js';
 
 type FieldFactory<TInput, TOutput, TCodes extends string> = {
   (config: { required: true; messages?: ErrorMessages<TCodes | 'REQUIRED'> }): FieldSchema<TInput, TOutput, true, TCodes>;

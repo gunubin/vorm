@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
-import { vo, createField, createFormSchema, validateForm } from '@gunubin/vorm-core';
+import { vo } from '@gunubin/vorm-core';
+import { createField, createFormSchema, validateForm } from '@gunubin/vorm-form';
 import { fromZod } from '../from-zod.js';
 
 describe('fromZod integration test', () => {

@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@gunubin/vorm-core': resolve(__dirname, '../core/src/index.ts'),
+      '@gunubin/vorm-form': resolve(__dirname, '../form/src/index.ts'),
     },
   },
   test: {

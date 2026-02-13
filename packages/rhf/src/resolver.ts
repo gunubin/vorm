@@ -6,7 +6,7 @@ import {
   type FieldSchema,
   type FormInputValues,
   type FormOutputValues,
-} from '@gunubin/vorm-core';
+} from '@gunubin/vorm-form';
 
 type AnyFields = Record<string, FieldSchema<any, any, boolean, any>>;
 

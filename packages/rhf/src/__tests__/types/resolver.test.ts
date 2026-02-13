@@ -1,6 +1,8 @@
 import { expectTypeOf } from 'vitest';
-import { vo, createField, createFormSchema } from '@gunubin/vorm-core';
-import type { Brand, FormInputValues, FormOutputValues } from '@gunubin/vorm-core';
+import { vo } from '@gunubin/vorm-core';
+import type { Brand } from '@gunubin/vorm-core';
+import { createField, createFormSchema } from '@gunubin/vorm-form';
+import type { FormInputValues, FormOutputValues } from '@gunubin/vorm-form';
 import type { FieldValues } from 'react-hook-form';
 import { useVorm } from '../../use-vorm-form.js';
 

@@ -1,5 +1,6 @@
-import { vo, createRule, createField, createFormSchema } from '@gunubin/vorm-core';
+import { vo, createRule } from '@gunubin/vorm-core';
 import type { Infer } from '@gunubin/vorm-core';
+import { createField, createFormSchema } from '@gunubin/vorm-form';
 import { useForm } from '@gunubin/vorm-react';
 
 const minLength = createRule<string, number>(

@@ -1,5 +1,6 @@
 import { expectTypeOf } from 'vitest';
-import { vo, createField, createFormSchema } from '@gunubin/vorm-core';
+import { vo } from '@gunubin/vorm-core';
+import { createField, createFormSchema } from '@gunubin/vorm-form';
 import { useField } from '../../use-field.js';
 import type { FormState } from '../../use-form.js';
 

@@ -1,6 +1,8 @@
 import { expectTypeOf } from 'vitest';
-import { vo, createRule, createField } from '../../index.js';
-import type { VODefinition, ErrorMessageMap, FieldSchema, Brand } from '../../index.js';
+import { vo, createRule } from '@gunubin/vorm-core';
+import type { VODefinition, Brand } from '@gunubin/vorm-core';
+import { createField } from '../../create-field.js';
+import type { ErrorMessageMap, FieldSchema } from '../../types.js';
 
 // =============================================
 // createRule: code literal inference

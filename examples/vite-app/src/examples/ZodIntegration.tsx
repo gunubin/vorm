@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { vo, createField, createFormSchema } from '@gunubin/vorm-core';
+import { vo } from '@gunubin/vorm-core';
 import type { Infer } from '@gunubin/vorm-core';
+import { createField, createFormSchema } from '@gunubin/vorm-form';
 import { useForm } from '@gunubin/vorm-react';
 import { fromZod } from '@gunubin/vorm-zod';
 

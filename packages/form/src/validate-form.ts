@@ -1,4 +1,4 @@
-import type { FormSchema, FieldSchema, FormErrors, FormInputValues, ErrorMessages } from './types.js';
+import type { FormSchema, FieldSchema, FormErrors, FormInputValues } from './types.js';
 import { validateField } from './validate-field.js';
 
 export function validateForm<TFields extends Record<string, FieldSchema<any, any, boolean, any>>>(

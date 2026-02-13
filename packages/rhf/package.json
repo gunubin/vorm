@@ -1,6 +1,6 @@
 {
   "name": "@gunubin/vorm-rhf",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Thin React Hook Form resolver adapter for @gunubin/vorm-core — branded type output with zero API wrapping",
   "keywords": ["form", "react-hook-form", "validation", "branded-types", "typescript", "resolver"],
   "license": "MIT",
@@ -42,7 +42,8 @@
     "react-hook-form": "^7.49.0"
   },
   "dependencies": {
-    "@gunubin/vorm-core": "workspace:*"
+    "@gunubin/vorm-core": "workspace:*",
+    "@gunubin/vorm-form": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.0",

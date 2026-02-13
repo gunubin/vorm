@@ -26,6 +26,9 @@ importers:
       '@gunubin/vorm-core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@gunubin/vorm-form':
+        specifier: workspace:*
+        version: link:../../packages/form
       '@gunubin/vorm-react':
         specifier: workspace:*
         version: link:../../packages/react
@@ -73,11 +76,27 @@ importers:
         specifier: ^3.0.5
         version: 3.2.4(jsdom@26.1.0)
 
+  packages/form:
+    dependencies:
+      '@gunubin/vorm-core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.5
+        version: 3.2.4(jsdom@26.1.0)
+
   packages/react:
     dependencies:
       '@gunubin/vorm-core':
         specifier: workspace:*
         version: link:../core
+      '@gunubin/vorm-form':
+        specifier: workspace:*
+        version: link:../form
     devDependencies:
       '@testing-library/jest-dom':
         specifier: ^6.6.3
@@ -112,6 +131,9 @@ importers:
       '@gunubin/vorm-core':
         specifier: workspace:*
         version: link:../core
+      '@gunubin/vorm-form':
+        specifier: workspace:*
+        version: link:../form
     devDependencies:
       '@testing-library/jest-dom':
         specifier: ^6.6.3
@@ -150,6 +172,9 @@ importers:
         specifier: workspace:*
         version: link:../core
     devDependencies:
+      '@gunubin/vorm-form':
+        specifier: workspace:*
+        version: link:../form
       typescript:
         specifier: ^5.9.3
         version: 5.9.3

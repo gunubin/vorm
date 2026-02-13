@@ -1,6 +1,8 @@
 import { expectTypeOf } from 'vitest';
-import { vo, createField, createFormSchema, validateAndCreate } from '@gunubin/vorm-core';
-import type { Brand, Infer, FieldSchema, FieldError, FormInputValues, FormOutputValues, VOLike } from '@gunubin/vorm-core';
+import { vo, validateAndCreate } from '@gunubin/vorm-core';
+import type { Brand, Infer, VOLike } from '@gunubin/vorm-core';
+import { createField, createFormSchema } from '@gunubin/vorm-form';
+import type { FieldSchema, FieldError, FormInputValues, FormOutputValues } from '@gunubin/vorm-form';
 import type { FormState, AsyncFieldValidator, AsyncValidators } from '../../use-form.js';
 
 type Email = Brand<string, 'Email'>;

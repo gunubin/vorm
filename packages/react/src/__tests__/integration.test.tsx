@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { vo, createField, createFormSchema } from '@gunubin/vorm-core';
+import { vo } from '@gunubin/vorm-core';
+import { createField, createFormSchema } from '@gunubin/vorm-form';
 import { useForm } from '../use-form.js';
 import { useField } from '../use-field.js';
 
@@ -29,7 +30,7 @@ const loginSchema = createFormSchema({
 });
 
 describe('login form integration', () => {
-  it('full flow: input → validation → fix → submit', async () => {
+  it('full flow: input -> validation -> fix -> submit', async () => {
     const onSubmit = vi.fn();
 
     const { result } = renderHook(() => {
@@ -89,7 +90,7 @@ describe('login form integration', () => {
     });
   });
 
-  it('error display → fix → error cleared (onChange mode)', () => {
+  it('error display -> fix -> error cleared (onChange mode)', () => {
     const { result } = renderHook(() => {
       const form = useForm(loginSchema, {
         defaultValues: { email: '', password: '' },

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { vo, createField, createFormSchema } from '@gunubin/vorm-core';
+import { vo } from '@gunubin/vorm-core';
+import { createField, createFormSchema } from '@gunubin/vorm-form';
 import { useForm } from '../use-form.js';
 
 const EmailVO = vo('Email', [
@@ -1114,9 +1115,9 @@ describe('useForm', () => {
       const asyncPromise = new Promise<null>((resolve) => {
         resolveAsync = resolve;
       });
-      // email: non-debounced async → creates AbortController immediately
+      // email: non-debounced async -> creates AbortController immediately
       const emailAsync = vi.fn().mockReturnValue(asyncPromise);
-      // password: debounced async → creates timer
+      // password: debounced async -> creates timer
       const passwordAsync = vi.fn().mockResolvedValue(null);
 
       const { result, unmount } = renderHook(() =>
@@ -1130,13 +1131,13 @@ describe('useForm', () => {
         }),
       );
 
-      // Trigger email async (no debounce → runs immediately, creates AbortController)
+      // Trigger email async (no debounce -> runs immediately, creates AbortController)
       act(() => {
         result.current.setFieldValue('email', 'new@example.com');
       });
       expect(result.current.isValidating).toBe(true);
 
-      // Trigger password async (with debounce → creates timer, does not run yet)
+      // Trigger password async (with debounce -> creates timer, does not run yet)
       act(() => {
         result.current.setFieldValue('password', 'NewPass123');
       });

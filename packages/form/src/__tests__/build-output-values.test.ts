@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { vo } from '@gunubin/vorm-core';
 import { buildOutputValues } from '../build-output-values.js';
-import { vo } from '../vo.js';
 import { createField } from '../create-field.js';
 
 const Price = vo('Price', [

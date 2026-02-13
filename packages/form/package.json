@@ -1,14 +1,14 @@
 {
-  "name": "@gunubin/vorm-zod",
-  "version": "0.2.0",
-  "description": "Zod schema adapter for vorm — convert Zod checks to validation rules",
-  "keywords": ["form", "zod", "validation", "adapter", "typescript"],
+  "name": "@gunubin/vorm-form",
+  "version": "0.1.0",
+  "description": "Field schemas, form validation, and output building for vorm",
+  "keywords": ["form", "validation", "field-schema", "typescript"],
   "license": "MIT",
   "author": "gunubin",
   "repository": {
     "type": "git",
     "url": "https://github.com/gunubin/vorm.git",
-    "directory": "packages/zod"
+    "directory": "packages/form"
   },
   "homepage": "https://github.com/gunubin/vorm#readme",
   "bugs": {
@@ -37,15 +37,10 @@
   "publishConfig": {
     "access": "public"
   },
-  "peerDependencies": {
-    "zod": "^3.25.0"
-  },
   "dependencies": {
     "@gunubin/vorm-core": "workspace:*"
   },
   "devDependencies": {
-    "@gunubin/vorm-form": "workspace:*",
-    "zod": "^3.25.0",
     "typescript": "^5.9.3",
     "vitest": "^3.0.5"
   }

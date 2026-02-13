@@ -3,7 +3,7 @@ import type {
   FormInputValues,
   FormErrors,
   FieldError,
-} from '@gunubin/vorm-core';
+} from '@gunubin/vorm-form';
 
 export type FormStoreState<TFields extends Record<string, FieldSchema<any, any, boolean, any>>> = {
   values: FormInputValues<TFields>;

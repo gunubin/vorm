@@ -1,7 +1,9 @@
 import { expectTypeOf } from 'vitest';
 import { z } from 'zod';
-import { vo, createField, createFormSchema } from '@gunubin/vorm-core';
-import type { ValidationRule, Brand, Infer, VODefinition, FormOutputValues, FormInputValues } from '@gunubin/vorm-core';
+import { vo } from '@gunubin/vorm-core';
+import type { ValidationRule, Brand, Infer, VODefinition } from '@gunubin/vorm-core';
+import { createField, createFormSchema } from '@gunubin/vorm-form';
+import type { FormOutputValues, FormInputValues } from '@gunubin/vorm-form';
 import { fromZod } from '../../from-zod.js';
 
 describe('fromZod type tests', () => {
